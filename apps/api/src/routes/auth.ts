@@ -11,8 +11,16 @@ import { logAuditEvent } from '../middleware/audit';
 const router = Router();
 
 router.post('/login', authLimiter, async (req: Request, res: Response): Promise<void> => {
-  const parsed = loginSchema.parse(req.body);
-  const { identifier, password, deviceId } = parsed;
+  const payload = {
+    ...req.body,
+    identifier: req.body.identifier || req.body.email || req.body.phone,
+  };
+  const result = loginSchema.safeParse(payload);
+  if (!result.success) {
+    res.status(400).json({ error: result.error.errors[0]?.message || 'Invalid input parameters' });
+    return;
+  }
+  const { identifier, password, deviceId } = result.data;
 
   // Find user by email, phone, or employeeCode
   let user = await prisma.user.findFirst({
