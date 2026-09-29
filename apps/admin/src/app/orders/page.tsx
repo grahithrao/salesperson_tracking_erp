@@ -38,6 +38,7 @@ const ORDER_STEPS = [
 function OrdersContent() {
   const searchParams = useSearchParams();
   const initialStatus = searchParams.get('status') || '';
+  const initialNew = searchParams.get('new') === 'true';
   const { token } = useAuth();
 
   const [orders, setOrders] = useState<any[]>([]);
@@ -46,7 +47,7 @@ function OrdersContent() {
   const [loading, setLoading] = useState(true);
 
   // Multi-step New Order Mode
-  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+  const [isCreatingOrder, setIsCreatingOrder] = useState(initialNew);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
   // Form State
@@ -471,6 +472,7 @@ function OrdersContent() {
 
               <div className="flex items-center gap-3">
                 <Button
+                  id="btn-new-order"
                   variant="primary"
                   size="md"
                   onClick={() => setIsCreatingOrder(true)}

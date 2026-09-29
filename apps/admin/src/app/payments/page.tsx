@@ -35,6 +35,7 @@ const PAYMENT_STEPS = [
 function PaymentsContent() {
   const searchParams = useSearchParams();
   const initialStatus = searchParams.get('status') || '';
+  const initialNew = searchParams.get('new') === 'true';
   const { token } = useAuth();
 
   const [payments, setPayments] = useState<any[]>([]);
@@ -43,7 +44,7 @@ function PaymentsContent() {
   const [loading, setLoading] = useState(true);
 
   // Multi-step Payment Collection Wizard Mode
-  const [isRecordingPayment, setIsRecordingPayment] = useState(false);
+  const [isRecordingPayment, setIsRecordingPayment] = useState(initialNew);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
   // Form State
@@ -436,6 +437,7 @@ function PaymentsContent() {
 
               <div className="flex items-center gap-3">
                 <Button
+                  id="btn-record-collection"
                   variant="primary"
                   size="md"
                   onClick={() => setIsRecordingPayment(true)}
