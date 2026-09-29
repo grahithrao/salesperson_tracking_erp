@@ -1,0 +1,24 @@
+{
+  "name": "salesperson-tracking-erp",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:api": "npm --workspace=@erp/api run dev",
+    "dev:admin": "npm --workspace=@erp/admin run dev",
+    "dev:mobile": "npm --workspace=@erp/mobile run start",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "db:migrate": "npm --workspace=@erp/database run migrate",
+    "db:seed": "npm --workspace=@erp/database run seed",
+    "db:generate": "npm --workspace=@erp/database run generate"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}
