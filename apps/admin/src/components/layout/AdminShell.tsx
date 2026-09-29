@@ -24,10 +24,10 @@ export default function AdminShell({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-[#F5F7F8]">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-3 border-teal-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs text-slate-500 font-medium">Loading session...</p>
+          <div className="w-7 h-7 border-2 border-[#081224] border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs text-[#586570] font-medium">Loading session...</p>
         </div>
       </div>
     );
@@ -38,11 +38,11 @@ export default function AdminShell({
   }
 
   return (
-    <div className="min-h-screen flex bg-slate-50">
+    <div className="min-h-screen flex bg-[#F5F7F8]">
       <Sidebar />
-      <div className="flex-1 flex flex-col pl-64 min-w-0">
+      <div className="flex-1 flex flex-col pl-[236px] min-w-0">
         <Header title={title} />
-        <main className="flex-1 p-8 overflow-y-auto">{children}</main>
+        <main className="flex-1 p-6 md:p-8 overflow-y-auto">{children}</main>
       </div>
     </div>
   );

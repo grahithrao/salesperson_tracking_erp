@@ -28,7 +28,7 @@ function MainApp() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0284c7" />
+        <ActivityIndicator size="large" color="#081224" />
         <Text style={styles.loadingText}>Initializing FieldTrack ERP...</Text>
       </View>
     );
@@ -59,12 +59,17 @@ function MainApp() {
       {/* Top App Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
+          <div style={{ display: 'none' }} />
           <View style={styles.brandIcon}>
-            <Text style={styles.brandIconText}>FT</Text>
+            <View style={styles.brandInner}>
+              <View style={styles.brandDot} />
+            </View>
           </View>
           <View>
-            <Text style={styles.headerTitle}>FieldTrack ERP</Text>
-            <Text style={styles.headerSubtitle}>{user.name} • {user.employeeCode || 'Sales'}</Text>
+            <Text style={styles.headerTitle}>FieldTrack</Text>
+            <Text style={styles.headerSubtitle}>
+              {user.name} • {user.employeeCode || 'Sales'}
+            </Text>
           </View>
         </View>
 
@@ -83,13 +88,13 @@ function MainApp() {
             <View
               style={[
                 styles.dutyDot,
-                { backgroundColor: dutyStatus === 'ON_DUTY' ? '#10b981' : '#94a3b8' },
+                { backgroundColor: dutyStatus === 'ON_DUTY' ? '#2E6819' : '#80909D' },
               ]}
             />
             <Text
               style={[
                 styles.dutyText,
-                { color: dutyStatus === 'ON_DUTY' ? '#065f46' : '#475569' },
+                { color: dutyStatus === 'ON_DUTY' ? '#2E6819' : '#586570' },
               ]}
             >
               {dutyStatus === 'ON_DUTY' ? 'ON DUTY' : 'OFF DUTY'}
@@ -116,57 +121,29 @@ function MainApp() {
         {activeTab === 'Profile' && <ProfileScreen />}
       </View>
 
-      {/* Bottom Navigation Bar (Section 32) */}
+      {/* Bottom Navigation Bar (Matching Reference Sidebar Pill Style) */}
       <View style={styles.bottomNav}>
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'Home' && styles.activeTabButton]}
-          onPress={() => setActiveTab('Home')}
-          accessibilityRole="tab"
-          accessibilityLabel="Home"
-        >
-          <Text style={[styles.tabIcon, activeTab === 'Home' && styles.activeTabIcon]}>🏠</Text>
-          <Text style={[styles.tabLabel, activeTab === 'Home' && styles.activeTabLabel]}>Home</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'Clients' && styles.activeTabButton]}
-          onPress={() => setActiveTab('Clients')}
-          accessibilityRole="tab"
-          accessibilityLabel="Clients"
-        >
-          <Text style={[styles.tabIcon, activeTab === 'Clients' && styles.activeTabIcon]}>👥</Text>
-          <Text style={[styles.tabLabel, activeTab === 'Clients' && styles.activeTabLabel]}>Clients</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'Orders' && styles.activeTabButton]}
-          onPress={() => setActiveTab('Orders')}
-          accessibilityRole="tab"
-          accessibilityLabel="Orders"
-        >
-          <Text style={[styles.tabIcon, activeTab === 'Orders' && styles.activeTabIcon]}>📦</Text>
-          <Text style={[styles.tabLabel, activeTab === 'Orders' && styles.activeTabLabel]}>Orders</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'Collect' && styles.activeTabButton]}
-          onPress={() => setActiveTab('Collect')}
-          accessibilityRole="tab"
-          accessibilityLabel="Collect"
-        >
-          <Text style={[styles.tabIcon, activeTab === 'Collect' && styles.activeTabIcon]}>💳</Text>
-          <Text style={[styles.tabLabel, activeTab === 'Collect' && styles.activeTabLabel]}>Collect</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'Profile' && styles.activeTabButton]}
-          onPress={() => setActiveTab('Profile')}
-          accessibilityRole="tab"
-          accessibilityLabel="Profile"
-        >
-          <Text style={[styles.tabIcon, activeTab === 'Profile' && styles.activeTabIcon]}>👤</Text>
-          <Text style={[styles.tabLabel, activeTab === 'Profile' && styles.activeTabLabel]}>Profile</Text>
-        </TouchableOpacity>
+        {[
+          { id: 'Home', label: 'Home', icon: '🏠' },
+          { id: 'Clients', label: 'Clients', icon: '👥' },
+          { id: 'Orders', label: 'Orders', icon: '📦' },
+          { id: 'Collect', label: 'Collect', icon: '💳' },
+          { id: 'Profile', label: 'Profile', icon: '👤' },
+        ].map((t) => {
+          const isActive = activeTab === t.id;
+          return (
+            <TouchableOpacity
+              key={t.id}
+              style={[styles.tabButton, isActive && styles.activeTabButton]}
+              onPress={() => setActiveTab(t.id as TabType)}
+              accessibilityRole="tab"
+              accessibilityLabel={t.label}
+            >
+              <Text style={[styles.tabIcon, isActive && styles.activeTabIcon]}>{t.icon}</Text>
+              <Text style={[styles.tabLabel, isActive && styles.activeTabLabel]}>{t.label}</Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
     </SafeAreaView>
   );
@@ -189,12 +166,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#F5F7F8',
   },
   loadingText: {
     marginTop: 12,
-    fontSize: 14,
-    color: '#64748b',
+    fontSize: 13,
+    color: '#586570',
     fontWeight: '500',
   },
   header: {
@@ -204,7 +181,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: '#CBD2D7',
     backgroundColor: '#ffffff',
   },
   headerLeft: {
@@ -213,26 +190,36 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   brandIcon: {
-    width: 36,
-    height: 36,
+    width: 32,
+    height: 32,
     borderRadius: 8,
-    backgroundColor: '#0284c7',
+    backgroundColor: '#081224',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  brandIconText: {
-    color: '#ffffff',
-    fontWeight: '800',
-    fontSize: 15,
+  brandInner: {
+    width: 16,
+    height: 16,
+    borderWidth: 1.5,
+    borderColor: '#ffffff',
+    borderRadius: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  brandDot: {
+    width: 5,
+    height: 5,
+    backgroundColor: '#B4E39C',
+    borderRadius: 1,
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
-    color: '#0f172a',
+    color: '#0B1320',
   },
   headerSubtitle: {
-    fontSize: 12,
-    color: '#64748b',
+    fontSize: 11,
+    color: '#586570',
   },
   headerRight: {
     flexDirection: 'row',
@@ -240,74 +227,83 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   syncBadge: {
-    backgroundColor: '#fef3c7',
+    backgroundColor: '#CFDDE5',
     paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingVertical: 3,
     borderRadius: 12,
   },
   syncBadgeText: {
-    color: '#92400e',
+    color: '#2C4656',
     fontSize: 10,
     fontWeight: '700',
   },
   dutyBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    gap: 5,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
     borderRadius: 20,
+    borderWidth: 1,
   },
   dutyOn: {
-    backgroundColor: '#d1fae5',
+    backgroundColor: '#E6F4DD',
+    borderColor: '#B4E39C',
   },
   dutyOff: {
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#F3F5F6',
+    borderColor: '#CBD2D7',
   },
   dutyDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
   },
   dutyText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
   },
   content: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#F5F7F8',
   },
   bottomNav: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#E8EDEF',
     borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
-    paddingVertical: 6,
-    paddingBottom: Platform.OS === 'ios' ? 20 : 8,
+    borderTopColor: '#D8DFE4',
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    paddingBottom: Platform.OS === 'ios' ? 20 : 6,
+    gap: 4,
   },
   tabButton: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 4,
+    paddingVertical: 5,
+    borderRadius: 10,
   },
-  activeTabButton: {},
+  activeTabButton: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#CBD2D7',
+  },
   tabIcon: {
-    fontSize: 20,
+    fontSize: 16,
     marginBottom: 2,
-    opacity: 0.5,
+    opacity: 0.6,
   },
   activeTabIcon: {
     opacity: 1,
-    transform: [{ scale: 1.1 }],
   },
   tabLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#64748b',
+    fontSize: 10,
+    fontWeight: '500',
+    color: '#586570',
   },
   activeTabLabel: {
-    color: '#0284c7',
+    color: '#0B1320',
     fontWeight: '700',
   },
 });

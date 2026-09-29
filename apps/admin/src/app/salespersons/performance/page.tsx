@@ -3,6 +3,8 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import AdminShell from '@/components/layout/AdminShell';
+import KpiCard from '@/components/ui/KpiCard';
+import StatusBadge from '@/components/ui/StatusBadge';
 import {
   Award,
   Calendar,
@@ -54,134 +56,116 @@ function PerformanceContent() {
   const selectedSp = salespersons.find((s) => s.id === selectedSpId);
 
   return (
-    <AdminShell title="Salesperson Performance Analytics">
-      {/* Filters */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <select
-            value={selectedSpId}
-            onChange={(e) => setSelectedSpId(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
-          >
-            {salespersons.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name} ({s.employeeCode} - {s.territory})
-              </option>
-            ))}
-          </select>
+    <AdminShell title="Salesperson Performance">
+      <div className="space-y-6 max-w-7xl">
+        {/* Filters Panel */}
+        <div className="bg-white p-5 rounded-xl border border-[#CBD2D7] flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <label className="text-xs font-semibold text-[#586570]">Select Representative:</label>
+            <select
+              value={selectedSpId}
+              onChange={(e) => setSelectedSpId(e.target.value)}
+              className="px-3 py-1.5 bg-white border border-[#CBD2D7] rounded-lg text-xs font-semibold text-[#0B1320] focus:ring-1 focus:ring-[#081224] focus:outline-none"
+            >
+              {salespersons.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name} ({s.employeeCode})
+                </option>
+              ))}
+            </select>
+          </div>
 
-          <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
+          <div className="flex items-center gap-1.5">
             {[
               { id: 'today', label: 'Today' },
               { id: 'this_week', label: 'This Week' },
               { id: 'this_month', label: 'This Month' },
-            ].map((tab) => (
+              { id: 'all_time', label: 'All Time' },
+            ].map((t) => (
               <button
-                key={tab.id}
-                onClick={() => setRange(tab.id)}
-                className={`px-3 py-1 text-xs font-semibold rounded-md transition ${
-                  range === tab.id ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                key={t.id}
+                onClick={() => setRange(t.id)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                  range === t.id
+                    ? 'bg-[#081224] text-white border-[#081224]'
+                    : 'bg-white text-[#586570] border-[#CBD2D7] hover:bg-[#F3F5F6]'
                 }`}
               >
-                {tab.label}
+                {t.label}
               </button>
             ))}
           </div>
         </div>
 
+        {/* Representative Summary Card */}
         {selectedSp && (
-          <div className="text-xs text-slate-500">
-            Reporting Period:{' '}
-            <span className="font-semibold text-slate-700 capitalize">{range.replace('_', ' ')}</span>
+          <div className="bg-white border border-[#CBD2D7] rounded-xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-[#E8EDEF] border border-[#CBD2D7] flex items-center justify-center font-bold text-[#0B1320] text-base">
+                {selectedSp.name.slice(0, 1)}
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-[#0B1320]">{selectedSp.name}</h2>
+                <p className="text-xs text-[#586570]">
+                  {selectedSp.employeeCode} • Territory: <strong className="text-[#0B1320]">{selectedSp.territory}</strong>
+                </p>
+              </div>
+            </div>
+            <StatusBadge status={selectedSp.dutyStatus} />
           </div>
         )}
-      </div>
 
-      {/* Metrics Cards */}
-      {metrics && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
-          {/* Sales */}
-          <div className="bg-white p-6 rounded-xl border border-slate-200/90 shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500">Confirmed Order Sales</span>
-              <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center">
-                <IndianRupee className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="mt-3">
-              <p className="text-2xl font-bold text-slate-900">
-                ₹{(metrics.totalSales || 0).toLocaleString('en-IN')}
-              </p>
-              <p className="text-xs text-emerald-600 mt-1 font-medium">{metrics.ordersCount || 0} Orders Closed</p>
-            </div>
-          </div>
-
-          {/* Collections */}
-          <div className="bg-white p-6 rounded-xl border border-slate-200/90 shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500">Verified Collections</span>
-              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                <Award className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="mt-3">
-              <p className="text-2xl font-bold text-slate-900">
-                ₹{(metrics.totalCollections || 0).toLocaleString('en-IN')}
-              </p>
-              <p className="text-xs text-slate-500 mt-1">Reconciled to Client Ledgers</p>
-            </div>
-          </div>
-
-          {/* Visits */}
-          <div className="bg-white p-6 rounded-xl border border-slate-200/90 shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500">Client Outreaches</span>
-              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                <Users className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="mt-3">
-              <p className="text-2xl font-bold text-slate-900">{metrics.clientsVisited || 0}</p>
-              <p className="text-xs text-slate-500 mt-1">Visits completed with GPS proof</p>
-            </div>
-          </div>
-
-          {/* Distance */}
-          <div className="bg-white p-6 rounded-xl border border-slate-200/90 shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500">Distance Travelled</span>
-              <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
-                <Navigation className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="mt-3">
-              <p className="text-2xl font-bold text-slate-900">{metrics.distanceKm || 0} KM</p>
-              <p className="text-xs text-slate-500 mt-1">Filtered GPS travel path</p>
-            </div>
-          </div>
-
-          {/* Working Days */}
-          <div className="bg-white p-6 rounded-xl border border-slate-200/90 shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500">Working Days</span>
-              <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-                <Clock className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="mt-3">
-              <p className="text-2xl font-bold text-slate-900">{metrics.workingDays || 0} Days</p>
-              <p className="text-xs text-slate-500 mt-1">Logged duty sessions</p>
-            </div>
-          </div>
+        {/* KPI Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <KpiCard
+            label="Total Sales Booked"
+            value={`₹${(metrics?.sales || 0).toLocaleString('en-IN')}`}
+            subValue={`${metrics?.orders || 0} purchase orders`}
+            icon={<IndianRupee className="w-4 h-4" />}
+          />
+          <KpiCard
+            label="Verified Collections"
+            value={`₹${(metrics?.collections || 0).toLocaleString('en-IN')}`}
+            subValue="Post-reconciliation ledger credits"
+            icon={<Award className="w-4 h-4" />}
+          />
+          <KpiCard
+            label="Client Visits Completed"
+            value={metrics?.clientsVisited || 0}
+            subValue={`${metrics?.newClients || 0} new clients added`}
+            icon={<Users className="w-4 h-4" />}
+          />
+          <KpiCard
+            label="Estimated Travel Distance"
+            value={`${(metrics?.distance || 0).toFixed(1)} KM`}
+            subValue="GPS breadcrumb estimation"
+            icon={<Navigation className="w-4 h-4" />}
+          />
+          <KpiCard
+            label="Active Duty Shifts"
+            value={`${metrics?.workingDays || 0} Days`}
+            subValue="Attendance sessions logged"
+            icon={<Clock className="w-4 h-4" />}
+          />
+          <KpiCard
+            label="Average Booking Value"
+            value={
+              metrics?.orders > 0
+                ? `₹${Math.round(metrics.sales / metrics.orders).toLocaleString('en-IN')}`
+                : '₹0'
+            }
+            subValue="Per booked purchase order"
+            icon={<ShoppingCart className="w-4 h-4" />}
+          />
         </div>
-      )}
+      </div>
     </AdminShell>
   );
 }
 
 export default function PerformancePage() {
   return (
-    <Suspense fallback={<div className="p-8 text-xs text-slate-400">Loading performance data...</div>}>
+    <Suspense fallback={<div className="p-8 text-xs text-[#586570]">Loading performance module...</div>}>
       <PerformanceContent />
     </Suspense>
   );

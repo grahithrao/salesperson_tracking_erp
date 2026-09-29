@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import AdminShell from '@/components/layout/AdminShell';
-import { Users, Building2, UserCheck, ArrowRight, ShieldCheck, Clock } from 'lucide-react';
+import Button from '@/components/ui/Button';
+import { Users, Building2, UserCheck, ArrowRight, ShieldCheck, Clock, X } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 export default function ClientAssignmentsPage() {
@@ -63,7 +64,7 @@ export default function ClientAssignmentsPage() {
         fetchData();
       } else {
         const err = await res.json();
-        alert(err.error || 'Failed to update assignment');
+        alert(err.error || 'Failed to reassign client');
       }
     } catch (e: any) {
       alert(e.message || 'Error updating assignment');
@@ -73,142 +74,160 @@ export default function ClientAssignmentsPage() {
   };
 
   return (
-    <AdminShell title="Client Territory & Representative Assignments">
-      <div className="mb-6 p-4 bg-teal-50 border border-teal-200 rounded-xl text-xs text-teal-800">
-        <p className="font-bold">Territory Assignment Engine</p>
-        <p className="mt-0.5 text-teal-700">
-          Client assignments maintain an auditable assignment history rather than overwriting records. Historical financial data remains securely preserved.
-        </p>
-      </div>
-
-      <div className="bg-white rounded-xl border border-slate-200/90 shadow-sm overflow-hidden">
-        <table className="w-full text-left text-xs border-collapse">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
-              <th className="py-3 px-4">Client Name</th>
-              <th className="py-3 px-4">City / Area</th>
-              <th className="py-3 px-4">Primary Representative</th>
-              <th className="py-3 px-4">Backup Representative</th>
-              <th className="py-3 px-4">Status</th>
-              <th className="py-3 px-4 text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {clients.map((c) => (
-              <tr key={c.id} className="hover:bg-slate-50/60 transition">
-                <td className="py-3.5 px-4 font-semibold text-slate-800">{c.name}</td>
-                <td className="py-3.5 px-4 text-slate-600">{c.city}</td>
-                <td className="py-3.5 px-4">
-                  {c.primarySalesperson ? (
-                    <span className="font-semibold text-slate-800 bg-teal-50 text-teal-700 border border-teal-200 px-2.5 py-0.5 rounded-full text-[11px]">
-                      {c.primarySalesperson.name}
-                    </span>
-                  ) : (
-                    <span className="text-amber-600 bg-amber-50 px-2 py-0.5 rounded text-[11px]">Unassigned</span>
-                  )}
-                </td>
-                <td className="py-3.5 px-4 text-slate-600">
-                  {c.backupSalesperson ? (
-                    <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[11px]">
-                      {c.backupSalesperson.name}
-                    </span>
-                  ) : (
-                    <span className="text-slate-400">None</span>
-                  )}
-                </td>
-                <td className="py-3.5 px-4">
-                  <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] font-bold">
-                    ACTIVE
-                  </span>
-                </td>
-                <td className="py-3.5 px-4 text-right">
-                  <button
-                    onClick={() => openAssignModal(c)}
-                    className="px-3 py-1 bg-slate-100 hover:bg-teal-600 hover:text-white rounded-md text-[11px] font-semibold transition"
-                  >
-                    Reassign
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Modal */}
-      {selectedClient && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md p-6">
-            <h3 className="text-base font-bold text-slate-800 mb-1">
-              Assign Representative: {selectedClient.name}
-            </h3>
-            <p className="text-xs text-slate-500 mb-4">{selectedClient.city} • Territory Mapping</p>
-
-            <form onSubmit={handleAssign} className="space-y-3.5 text-xs">
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Primary Sales Representative *</label>
-                <select
-                  required
-                  value={primarySpId}
-                  onChange={(e) => setPrimarySpId(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
-                >
-                  <option value="">Select Primary Representative</option>
-                  {salespersons.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} ({s.employeeCode} - {s.territory})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Backup Sales Representative (Optional)</label>
-                <select
-                  value={backupSpId}
-                  onChange={(e) => setBackupSpId(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
-                >
-                  <option value="">No Backup Representative</option>
-                  {salespersons.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} ({s.employeeCode} - {s.territory})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Assignment Rationale / Notes</label>
-                <textarea
-                  rows={2}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="e.g. Territory realignment for Mangalore North"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-3">
-                <button
-                  type="button"
-                  onClick={() => setSelectedClient(null)}
-                  className="px-3 py-1.5 border border-slate-200 text-slate-600 rounded-lg"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="px-4 py-1.5 bg-teal-600 text-white font-semibold rounded-lg disabled:opacity-60"
-                >
-                  {submitting ? 'Saving...' : 'Confirm Assignment'}
-                </button>
-              </div>
-            </form>
+    <AdminShell title="Territory & Client Assignments">
+      <div className="space-y-6 max-w-7xl">
+        {/* Header Panel */}
+        <div className="bg-white border border-[#CBD2D7] rounded-xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <span className="text-[11px] font-semibold tracking-wider uppercase text-[#586570]">
+              Account Ownership
+            </span>
+            <h1 className="text-xl md:text-2xl font-bold text-[#0B1320] mt-0.5">
+              Client Allocation & Coverage
+            </h1>
+            <p className="text-xs text-[#586570] mt-1">
+              Maintain primary and secondary sales representatives with permanent auditable change logs.
+            </p>
           </div>
         </div>
-      )}
+
+        {/* Assignments Table */}
+        <div className="bg-white rounded-xl border border-[#CBD2D7] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-[#F3F5F6] border-b border-[#CBD2D7] text-[#586570] font-semibold">
+                  <th className="py-3 px-4">Client Name</th>
+                  <th className="py-3 px-4">City / State</th>
+                  <th className="py-3 px-4">Primary Representative</th>
+                  <th className="py-3 px-4">Backup Representative</th>
+                  <th className="py-3 px-4">Assigned On</th>
+                  <th className="py-3 px-4 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#E2E7EC]">
+                {loading ? (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-[#80909D]">
+                      Loading client assignments...
+                    </td>
+                  </tr>
+                ) : (
+                  clients.map((c) => (
+                    <tr key={c.id} className="hover:bg-[#F3F5F6]/60 transition-colors">
+                      <td className="py-3 px-4 font-semibold text-[#0B1320]">{c.name}</td>
+                      <td className="py-3 px-4 text-[#586570]">{c.city}, {c.state}</td>
+                      <td className="py-3 px-4">
+                        {c.primarySalesperson ? (
+                          <span className="font-semibold text-[#0B1320] bg-[#F3F5F6] border border-[#CBD2D7] px-2.5 py-1 rounded-md text-[11px]">
+                            {c.primarySalesperson.name}
+                          </span>
+                        ) : (
+                          <span className="text-[11px] text-[#586570] bg-[#F3F5F6] border border-[#CBD2D7] px-2.5 py-1 rounded-md">
+                            Unassigned
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        {c.backupSalesperson ? (
+                          <span className="font-semibold text-[#586570] bg-[#F3F5F6] border border-[#E2E7EC] px-2.5 py-1 rounded-md text-[11px]">
+                            {c.backupSalesperson.name}
+                          </span>
+                        ) : (
+                          <span className="text-[11px] text-[#80909D]">-</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-[#586570]">
+                        {c.assignedAt ? new Date(c.assignedAt).toLocaleDateString('en-IN') : 'Default Seed'}
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => openAssignModal(c)}
+                        >
+                          Reassign
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Modal */}
+        {selectedClient && (
+          <div className="fixed inset-0 bg-[#081224]/30 backdrop-blur-[2px] z-50 flex items-center justify-center p-4">
+            <div className="bg-white border border-[#CBD2D7] rounded-xl max-w-md w-full p-6 shadow-xl animate-in fade-in">
+              <div className="flex items-center justify-between pb-3 border-b border-[#E2E7EC]">
+                <h3 className="text-base font-bold text-[#0B1320]">
+                  Reassign {selectedClient.name}
+                </h3>
+                <button onClick={() => setSelectedClient(null)} className="text-[#586570] hover:text-[#0B1320]">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleAssign} className="py-4 space-y-4 text-xs">
+                <div>
+                  <label className="block font-semibold text-[#0B1320] mb-1">Primary Salesperson</label>
+                  <select
+                    required
+                    value={primarySpId}
+                    onChange={(e) => setPrimarySpId(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-[#CBD2D7] rounded-lg text-xs font-medium text-[#0B1320] focus:ring-1 focus:ring-[#081224] focus:outline-none"
+                  >
+                    <option value="">Select Primary Salesperson</option>
+                    {salespersons.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name} ({s.territory})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-[#0B1320] mb-1">Backup Salesperson (Optional)</label>
+                  <select
+                    value={backupSpId}
+                    onChange={(e) => setBackupSpId(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-[#CBD2D7] rounded-lg text-xs font-medium text-[#0B1320] focus:ring-1 focus:ring-[#081224] focus:outline-none"
+                  >
+                    <option value="">None / Optional</option>
+                    {salespersons.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name} ({s.territory})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-[#0B1320] mb-1">Reason for Reassignment</label>
+                  <textarea
+                    rows={2}
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="e.g. Territory boundary restructuring."
+                    className="w-full px-3 py-2 bg-white border border-[#CBD2D7] rounded-lg focus:ring-1 focus:ring-[#081224] focus:outline-none"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-4 border-t border-[#E2E7EC]">
+                  <Button variant="secondary" onClick={() => setSelectedClient(null)}>
+                    Cancel
+                  </Button>
+                  <Button variant="primary" type="submit" disabled={submitting}>
+                    {submitting ? 'Updating...' : 'Save Assignment'}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
     </AdminShell>
   );
 }

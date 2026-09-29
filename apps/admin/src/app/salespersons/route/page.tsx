@@ -4,6 +4,7 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import AdminShell from '@/components/layout/AdminShell';
 import RouteMap from '@/components/maps/RouteMap';
+import StatusBadge from '@/components/ui/StatusBadge';
 import {
   Calendar,
   User,
@@ -58,156 +59,132 @@ function RouteHistoryContent() {
   }, [token, selectedSpId, selectedDate]);
 
   const points = routeData?.points || [];
-  const events = routeData?.events || {};
+  const events = routeData?.events || { visits: [], orders: [], payments: [] };
+  const totalEvents = events.visits.length + events.orders.length + events.payments.length;
 
   return (
-    <AdminShell title="Salesperson Daily Route & History">
-      {/* Top Filter Controls */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2">
-            <User className="w-4 h-4 text-slate-400" />
-            <select
-              value={selectedSpId}
-              onChange={(e) => setSelectedSpId(e.target.value)}
-              className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
-            >
-              {salespersons.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name} ({s.employeeCode} - {s.territory})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-slate-400" />
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
-            />
-          </div>
-        </div>
-
-        {routeData && (
-          <div className="flex items-center gap-4 text-xs">
-            <div className="bg-teal-50 text-teal-800 px-3 py-1.5 rounded-lg border border-teal-200 font-semibold">
-              Distance: {routeData.estimatedDistanceKm} KM
+    <AdminShell title="Daily Route History">
+      <div className="space-y-6 max-w-7xl">
+        {/* Top Filter Panel */}
+        <div className="bg-white border border-[#CBD2D7] rounded-xl p-5 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <label className="text-xs font-semibold text-[#586570]">Representative:</label>
+              <select
+                value={selectedSpId}
+                onChange={(e) => setSelectedSpId(e.target.value)}
+                className="px-3 py-1.5 bg-white border border-[#CBD2D7] rounded-lg text-xs font-semibold text-[#0B1320] focus:ring-1 focus:ring-[#081224] focus:outline-none"
+              >
+                {salespersons.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name} ({s.employeeCode})
+                  </option>
+                ))}
+              </select>
             </div>
-            <div className="bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg font-medium">
-              GPS Points: {routeData.pointsCount}
+
+            <div className="flex items-center gap-2">
+              <label className="text-xs font-semibold text-[#586570]">Date:</label>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="px-3 py-1.5 bg-white border border-[#CBD2D7] rounded-lg text-xs font-semibold text-[#0B1320] focus:ring-1 focus:ring-[#081224] focus:outline-none"
+              />
             </div>
           </div>
-        )}
-      </div>
 
-      {/* Main Content Layout */}
-      <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-220px)]">
-        {/* Left: Route Polyline Map */}
-        <div className="flex-1 bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden flex flex-col">
-          <div className="p-3 border-b border-slate-200 bg-slate-50/50 flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-800">
-              Route Polyline & Event Markers ({selectedDate})
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-semibold text-[#0B1320] bg-[#F3F5F6] border border-[#CBD2D7] px-3 py-1.5 rounded-lg">
+              Est. Distance: {routeData?.estimatedDistanceKm ? `${routeData.estimatedDistanceKm.toFixed(1)} KM` : '0 KM'}
             </span>
-            <div className="flex items-center gap-2 text-[11px] text-slate-500">
-              <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" /> Start</span>
-              <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500" /> End</span>
-              <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded bg-purple-500" /> Visit</span>
-              <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded bg-amber-500" /> Order</span>
-            </div>
-          </div>
-          <div className="flex-1 relative">
-            <RouteMap points={points} events={events} />
+            <span className="text-xs font-semibold text-[#2E6819] bg-[#E6F4DD] border border-[#B4E39C] px-3 py-1.5 rounded-lg">
+              {points.length} GPS Points Recorded
+            </span>
           </div>
         </div>
 
-        {/* Right: Daily Timeline of Events */}
-        <div className="w-full lg:w-96 bg-white rounded-2xl border border-slate-200/90 shadow-sm flex flex-col overflow-hidden">
-          <div className="p-4 border-b border-slate-200 bg-slate-50/50">
-            <h3 className="text-sm font-bold text-slate-800">Field Activity Timeline</h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">Chronological visits, orders & collections</p>
+        {/* Map & Timeline Grid */}
+        <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-230px)]">
+          {/* Map Canvas */}
+          <div className="flex-1 bg-white rounded-xl border border-[#CBD2D7] overflow-hidden flex flex-col">
+            <div className="p-3.5 border-b border-[#CBD2D7] bg-[#F3F5F6]/60 flex items-center justify-between text-xs">
+              <span className="font-semibold text-[#0B1320]">GPS Breadcrumb Route Polyline</span>
+              <span className="text-[11px] text-[#586570]">
+                {points.length > 0
+                  ? `Shift start: ${new Date(points[0].timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`
+                  : 'No GPS movement logged for this date'}
+              </span>
+            </div>
+            <div className="flex-1 relative">
+              <RouteMap points={points} events={events} />
+            </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {/* Start of day */}
-            {routeData?.attendance?.loginAt && (
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs shrink-0">
-                  S
-                </div>
-                <div className="text-xs">
-                  <p className="font-semibold text-slate-900">Work Session Started</p>
-                  <p className="text-slate-400 text-[11px]">
-                    {new Date(routeData.attendance.loginAt).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' })}
-                  </p>
-                </div>
+          {/* Right Side: Timeline of Visits, Orders & Collections */}
+          <div className="w-full lg:w-96 bg-white rounded-xl border border-[#CBD2D7] flex flex-col overflow-hidden">
+            <div className="p-4 border-b border-[#CBD2D7] bg-[#F3F5F6]/60 flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-[#0B1320]">Chronological Events</h3>
+                <p className="text-[11px] text-[#586570]">{totalEvents} operational actions recorded</p>
               </div>
-            )}
+            </div>
 
-            {/* Visits */}
-            {(events.visits || []).map((v: any) => (
-              <div key={v.id} className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-xs shrink-0">
-                  <Building2 className="w-3.5 h-3.5" />
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {loading ? (
+                <div className="p-8 text-center text-xs text-[#80909D]">Loading route history...</div>
+              ) : totalEvents === 0 ? (
+                <div className="p-8 text-center text-xs text-[#80909D]">
+                  No visits, bookings, or collections on this day.
                 </div>
-                <div className="text-xs">
-                  <p className="font-semibold text-slate-900">Visit: {v.clientName}</p>
-                  <p className="text-slate-500 text-[11px]">Outcome: {v.outcome}</p>
-                  <p className="text-slate-400 text-[10px]">
-                    {new Date(v.startedAt).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' })} • Distance: {v.distanceFromClient || 0}m
-                  </p>
-                </div>
-              </div>
-            ))}
+              ) : (
+                <>
+                  {/* Visits */}
+                  {events.visits.map((v: any) => (
+                    <div key={v.id} className="p-3 rounded-xl border border-[#CBD2D7] bg-[#F3F5F6] space-y-1.5 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-[#0B1320] flex items-center gap-1.5">
+                          <Building2 className="w-3.5 h-3.5 text-[#2E6819]" />
+                          {v.clientName}
+                        </span>
+                        <StatusBadge status={v.outcome} />
+                      </div>
+                      <p className="text-[#586570]">
+                        {new Date(v.startedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })} • GPS Distance: {v.distanceFromClient ? `${Math.round(v.distanceFromClient)}m` : '0m'}
+                      </p>
+                    </div>
+                  ))}
 
-            {/* Orders */}
-            {(events.orders || []).map((o: any) => (
-              <div key={o.id} className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs shrink-0">
-                  <ShoppingCart className="w-3.5 h-3.5" />
-                </div>
-                <div className="text-xs">
-                  <p className="font-semibold text-slate-900">Order #{o.orderNumber}</p>
-                  <p className="text-slate-700 font-bold">₹{o.grandTotal.toLocaleString('en-IN')}</p>
-                  <p className="text-slate-400 text-[10px]">
-                    {new Date(o.createdAt).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' })} • {o.clientName}
-                  </p>
-                </div>
-              </div>
-            ))}
+                  {/* Orders */}
+                  {events.orders.map((o: any) => (
+                    <div key={o.id} className="p-3 rounded-xl border border-[#CBD2D7] bg-white space-y-1.5 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-[#0B1320] flex items-center gap-1.5">
+                          <ShoppingCart className="w-3.5 h-3.5 text-[#081224]" />
+                          {o.orderNumber}
+                        </span>
+                        <span className="font-bold text-[#0B1320]">₹{Number(o.grandTotal).toLocaleString('en-IN')}</span>
+                      </div>
+                      <p className="text-[#586570]">Client: {o.clientName} • {new Date(o.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</p>
+                    </div>
+                  ))}
 
-            {/* Payments */}
-            {(events.payments || []).map((p: any) => (
-              <div key={p.id} className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs shrink-0">
-                  <CreditCard className="w-3.5 h-3.5" />
-                </div>
-                <div className="text-xs">
-                  <p className="font-semibold text-slate-900">Payment {p.receiptNumber}</p>
-                  <p className="text-emerald-700 font-bold">₹{p.amount.toLocaleString('en-IN')} ({p.method})</p>
-                  <p className="text-slate-400 text-[10px]">
-                    {new Date(p.collectedAt).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' })} • {p.clientName}
-                  </p>
-                </div>
-              </div>
-            ))}
-
-            {/* End of day */}
-            {routeData?.attendance?.logoutAt && (
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-red-100 text-red-700 flex items-center justify-center font-bold text-xs shrink-0">
-                  E
-                </div>
-                <div className="text-xs">
-                  <p className="font-semibold text-slate-900">Work Session Ended</p>
-                  <p className="text-slate-400 text-[11px]">
-                    {new Date(routeData.attendance.logoutAt).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' })}
-                  </p>
-                </div>
-              </div>
-            )}
+                  {/* Collections */}
+                  {events.payments.map((p: any) => (
+                    <div key={p.id} className="p-3 rounded-xl border border-[#B4E39C] bg-[#E6F4DD]/40 space-y-1.5 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-[#2E6819] flex items-center gap-1.5">
+                          <CreditCard className="w-3.5 h-3.5 text-[#2E6819]" />
+                          {p.receiptNumber}
+                        </span>
+                        <span className="font-bold text-[#2E6819]">₹{Number(p.amount).toLocaleString('en-IN')}</span>
+                      </div>
+                      <p className="text-[#586570]">Mode: {p.method} • {new Date(p.collectedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</p>
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -217,7 +194,7 @@ function RouteHistoryContent() {
 
 export default function RouteHistoryPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-xs text-slate-400">Loading route history...</div>}>
+    <Suspense fallback={<div className="p-8 text-xs text-[#586570]">Loading route module...</div>}>
       <RouteHistoryContent />
     </Suspense>
   );

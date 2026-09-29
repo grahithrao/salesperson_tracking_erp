@@ -528,7 +528,7 @@ const styles = StyleSheet.create({
   btnAction: {
     flex: 1,
     paddingVertical: 7,
-    backgroundColor: '#0284c7',
+    backgroundColor: '#081224',
     borderRadius: 6,
     alignItems: 'center',
   },

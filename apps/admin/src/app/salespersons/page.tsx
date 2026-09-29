@@ -3,7 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import AdminShell from '@/components/layout/AdminShell';
-import { Users, Search, Plus, MapPin, Eye, Phone, Mail, Award, CheckCircle, Clock } from 'lucide-react';
+import Button from '@/components/ui/Button';
+import StatusBadge from '@/components/ui/StatusBadge';
+import { Users, Search, Plus, MapPin, Eye, Phone, Mail, Award, CheckCircle, Clock, X } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 export default function SalespersonsPage() {
@@ -71,216 +73,240 @@ export default function SalespersonsPage() {
     }
   };
 
-  const filtered = salespersons.filter((s) => {
+  const filteredSalespersons = salespersons.filter((sp) => {
     const q = search.toLowerCase();
     return (
-      s.name.toLowerCase().includes(q) ||
-      s.employeeCode.toLowerCase().includes(q) ||
-      s.territory.toLowerCase().includes(q) ||
-      s.phone.includes(q)
+      sp.user?.name?.toLowerCase().includes(q) ||
+      sp.employeeCode?.toLowerCase().includes(q) ||
+      sp.territory?.toLowerCase().includes(q) ||
+      sp.user?.phone?.includes(q)
     );
   });
 
   return (
-    <AdminShell title="Sales Representatives">
-      {/* Header bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-3">
+    <AdminShell title="Sales Force Management">
+      <div className="space-y-6 max-w-7xl">
+        {/* Header Panel */}
+        <div className="bg-white border border-[#CBD2D7] rounded-xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <span className="text-[11px] font-semibold tracking-wider uppercase text-[#586570]">
+              Field Personnel Directory
+            </span>
+            <h1 className="text-xl md:text-2xl font-bold text-[#0B1320] mt-0.5">
+              Sales Representatives & Duty Status
+            </h1>
+            <p className="text-xs text-[#586570] mt-1">
+              Active sales force roster, assigned territories, tracking hardware status, and shift logs.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Link href="/salespersons/live">
+              <Button variant="secondary" size="md" icon={<MapPin className="w-4 h-4 text-[#2E6819]" />}>
+                Live Map
+              </Button>
+            </Link>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => setShowAddModal(true)}
+              icon={<Plus className="w-4 h-4" />}
+            >
+              Add Representative
+            </Button>
+          </div>
+        </div>
+
+        {/* Search Bar */}
+        <div className="flex items-center justify-between gap-4">
           <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#80909D]" />
             <input
               type="text"
-              placeholder="Search by name, code, territory..."
+              placeholder="Search by name, employee code, territory..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-xs w-72 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 shadow-sm"
+              className="pl-8 pr-4 py-1.5 text-xs bg-white border border-[#CBD2D7] rounded-lg text-[#0B1320] focus:ring-1 focus:ring-[#081224] focus:outline-none w-80"
             />
           </div>
-          <span className="text-xs text-slate-500">{filtered.length} representatives found</span>
         </div>
 
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-3.5 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-semibold shadow-sm transition self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add Sales Representative</span>
-        </button>
-      </div>
-
-      {/* Table */}
-      <div className="bg-white rounded-xl border border-slate-200/90 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-600 font-semibold">
-                <th className="py-3 px-4">Salesperson</th>
-                <th className="py-3 px-4">Code</th>
-                <th className="py-3 px-4">Territory</th>
-                <th className="py-3 px-4">Contact</th>
-                <th className="py-3 px-4">Duty Status</th>
-                <th className="py-3 px-4">Assigned Clients</th>
-                <th className="py-3 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filtered.map((s) => {
-                const isOnDuty = s.dutyStatus === 'ON_DUTY';
-                return (
-                  <tr key={s.id} className="hover:bg-slate-50/60 transition">
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-700 font-bold flex items-center justify-center text-xs">
-                          {s.name.slice(0, 2).toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="font-semibold text-slate-800">{s.name}</p>
-                          <p className="text-[11px] text-slate-400">{s.email}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4 font-mono font-medium text-slate-700">{s.employeeCode}</td>
-                    <td className="py-3.5 px-4 text-slate-700">{s.territory}</td>
-                    <td className="py-3.5 px-4 text-slate-600">
-                      <div className="flex items-center gap-1.5">
-                        <Phone className="w-3.5 h-3.5 text-slate-400" />
-                        <span>{s.phone}</span>
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium ${
-                          isOnDuty
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                            : 'bg-slate-100 text-slate-600'
-                        }`}
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full ${isOnDuty ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
-                        {s.dutyStatus}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span className="font-semibold text-slate-800">{s.assignedClientsCount}</span> clients
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link
-                          href={`/salespersons/live?salespersonId=${s.id}`}
-                          title="View Live GPS"
-                          className="p-1.5 text-slate-500 hover:text-teal-600 hover:bg-slate-100 rounded-md transition"
-                        >
-                          <MapPin className="w-4 h-4" />
-                        </Link>
-                        <Link
-                          href={`/salespersons/performance?salespersonId=${s.id}`}
-                          title="View Performance"
-                          className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-md transition"
-                        >
-                          <Award className="w-4 h-4" />
-                        </Link>
-                      </div>
+        {/* Table */}
+        <div className="bg-white rounded-xl border border-[#CBD2D7] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-[#F3F5F6] border-b border-[#CBD2D7] text-[#586570] font-semibold">
+                  <th className="py-3 px-4">Salesperson</th>
+                  <th className="py-3 px-4">Employee Code</th>
+                  <th className="py-3 px-4">Contact</th>
+                  <th className="py-3 px-4">Territory</th>
+                  <th className="py-3 px-4">Assigned Clients</th>
+                  <th className="py-3 px-4">Duty Status</th>
+                  <th className="py-3 px-4 text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#E2E7EC]">
+                {loading ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-[#80909D]">
+                      Loading sales representatives...
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                ) : filteredSalespersons.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-[#80909D]">
+                      No sales representatives found.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredSalespersons.map((sp) => (
+                    <tr key={sp.id} className="hover:bg-[#F3F5F6]/60 transition-colors">
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-7 h-7 rounded-full bg-[#E8EDEF] border border-[#CBD2D7] flex items-center justify-center font-bold text-[#0B1320] text-xs">
+                            {sp.user?.name?.slice(0, 1)}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-[#0B1320]">{sp.user?.name}</p>
+                            <p className="text-[11px] text-[#586570]">{sp.user?.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 font-mono font-medium text-[#0B1320]">{sp.employeeCode}</td>
+                      <td className="py-3 px-4 text-[#586570]">{sp.user?.phone}</td>
+                      <td className="py-3 px-4">
+                        <span className="font-medium text-[#0B1320] bg-[#F3F5F6] border border-[#E2E7EC] px-2 py-0.5 rounded-md text-[11px]">
+                          {sp.territory}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-[#586570]">
+                        {sp.clientAssignments?.length || 0} Accounts
+                      </td>
+                      <td className="py-3 px-4">
+                        <StatusBadge status={sp.status} />
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center justify-center gap-2">
+                          <Link
+                            href={`/salespersons/route?salespersonId=${sp.id}`}
+                            className="px-2.5 py-1 rounded-md text-xs font-medium text-[#0B1320] border border-[#CBD2D7] hover:bg-[#F3F5F6] transition-colors"
+                          >
+                            Route
+                          </Link>
+                          <Link
+                            href={`/salespersons/performance?salespersonId=${sp.id}`}
+                            className="px-2.5 py-1 rounded-md text-xs font-medium text-[#0B1320] border border-[#CBD2D7] hover:bg-[#F3F5F6] transition-colors"
+                          >
+                            Stats
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
 
-      {/* Add Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md p-6">
-            <h3 className="text-base font-bold text-slate-800 mb-4">Add New Sales Representative</h3>
-            <form onSubmit={handleCreate} className="space-y-3.5">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Anand Varma"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
-                />
+        {/* Add Modal */}
+        {showAddModal && (
+          <div className="fixed inset-0 bg-[#081224]/30 backdrop-blur-[2px] z-50 flex items-center justify-center p-4">
+            <div className="bg-white border border-[#CBD2D7] rounded-xl max-w-md w-full p-6 shadow-xl animate-in fade-in">
+              <div className="flex items-center justify-between pb-3 border-b border-[#E2E7EC]">
+                <h3 className="text-base font-bold text-[#0B1320]">Register Sales Representative</h3>
+                <button onClick={() => setShowAddModal(false)} className="text-[#586570] hover:text-[#0B1320]">
+                  <X className="w-4 h-4" />
+                </button>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+
+              <form onSubmit={handleCreate} className="py-4 space-y-3.5 text-xs">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Employee Code</label>
+                  <label className="block font-semibold text-[#0B1320] mb-1">Full Name</label>
                   <input
                     type="text"
                     required
-                    value={employeeCode}
-                    onChange={(e) => setEmployeeCode(e.target.value)}
-                    placeholder="EMP-004"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g. Anand Kumar"
+                    className="w-full px-3 py-2 bg-white border border-[#CBD2D7] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#081224]"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Territory</label>
+                  <label className="block font-semibold text-[#0B1320] mb-1">Email Address</label>
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="anand@erp.com"
+                    className="w-full px-3 py-2 bg-white border border-[#CBD2D7] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#081224]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-[#0B1320] mb-1">Phone Number</label>
+                    <input
+                      type="tel"
+                      required
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="9876543210"
+                      className="w-full px-3 py-2 bg-white border border-[#CBD2D7] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#081224]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-[#0B1320] mb-1">Employee Code</label>
+                    <input
+                      type="text"
+                      required
+                      value={employeeCode}
+                      onChange={(e) => setEmployeeCode(e.target.value)}
+                      placeholder="EMP-004"
+                      className="w-full px-3 py-2 bg-white border border-[#CBD2D7] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#081224]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-[#0B1320] mb-1">Territory Assignment</label>
                   <input
                     type="text"
                     required
                     value={territory}
                     onChange={(e) => setTerritory(e.target.value)}
-                    placeholder="e.g. Mangalore East"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                    placeholder="e.g. Mangalore Central"
+                    className="w-full px-3 py-2 bg-white border border-[#CBD2D7] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#081224]"
                   />
                 </div>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Email Address</label>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="anand@erp.com"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Mobile Number</label>
-                <input
-                  type="tel"
-                  required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="9876543215"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Default Password</label>
-                <input
-                  type="text"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
-                />
-              </div>
-              <div className="flex justify-end gap-2 pt-3">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="px-3 py-1.5 border border-slate-200 text-slate-600 rounded-lg text-xs"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={creating}
-                  className="px-4 py-1.5 bg-teal-600 text-white font-medium rounded-lg text-xs disabled:opacity-60"
-                >
-                  {creating ? 'Saving...' : 'Create Salesperson'}
-                </button>
-              </div>
-            </form>
+
+                <div>
+                  <label className="block font-semibold text-[#0B1320] mb-1">Initial Password</label>
+                  <input
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-[#CBD2D7] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#081224]"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-4 border-t border-[#E2E7EC]">
+                  <Button variant="secondary" onClick={() => setShowAddModal(false)}>
+                    Cancel
+                  </Button>
+                  <Button variant="primary" type="submit" disabled={creating}>
+                    {creating ? 'Saving...' : 'Register Salesperson'}
+                  </Button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </AdminShell>
   );
 }

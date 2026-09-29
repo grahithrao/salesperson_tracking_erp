@@ -2,7 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import AdminShell from '@/components/layout/AdminShell';
-import { Package, Search, Plus, Tag, AlertCircle, CheckCircle } from 'lucide-react';
+import Button from '@/components/ui/Button';
+import StatusBadge from '@/components/ui/StatusBadge';
+import { Package, Search, Plus, Tag, AlertCircle, CheckCircle, X } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 export default function ProductsPage() {
@@ -80,219 +82,258 @@ export default function ProductsPage() {
   };
 
   return (
-    <AdminShell title="Product Catalog & Stock Management">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search by name, SKU, barcode..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-xs w-72 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 shadow-sm"
-            />
+    <AdminShell title="Product Catalog & Inventory">
+      <div className="space-y-6 max-w-7xl">
+        {/* Header Panel */}
+        <div className="bg-white border border-[#CBD2D7] rounded-xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <span className="text-[11px] font-semibold tracking-wider uppercase text-[#586570]">
+              Merchandise Inventory
+            </span>
+            <h1 className="text-xl md:text-2xl font-bold text-[#0B1320] mt-0.5">
+              Stock Items, Pricing & GST Rates
+            </h1>
+            <p className="text-xs text-[#586570] mt-1">
+              Maintain product SKUs, tax percentages, warehouse stock levels, and distributor wholesale prices.
+            </p>
           </div>
 
-          <select
-            value={selectedCat}
-            onChange={(e) => setSelectedCat(e.target.value)}
-            className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 shadow-sm"
-          >
-            <option value="">All Categories</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => setShowAddModal(true)}
+              icon={<Plus className="w-4 h-4" />}
+            >
+              Add Product
+            </Button>
+          </div>
         </div>
 
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-3.5 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-semibold shadow-sm transition"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add Product</span>
-        </button>
-      </div>
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#80909D]" />
+              <input
+                type="text"
+                placeholder="Search by SKU, product name, brand..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-8 pr-4 py-1.5 text-xs bg-white border border-[#CBD2D7] rounded-lg text-[#0B1320] focus:ring-1 focus:ring-[#081224] focus:outline-none w-72"
+              />
+            </div>
 
-      <div className="bg-white rounded-xl border border-slate-200/90 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-600 font-semibold">
-                <th className="py-3 px-4">Product Details</th>
-                <th className="py-3 px-4">SKU / Barcode</th>
-                <th className="py-3 px-4">Category</th>
-                <th className="py-3 px-4">Selling Price</th>
-                <th className="py-3 px-4">MRP</th>
-                <th className="py-3 px-4">Tax (GST)</th>
-                <th className="py-3 px-4">Stock Level</th>
-                <th className="py-3 px-4 text-right">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {products.map((p) => {
-                const isLowStock = p.stock <= p.minimumStock;
-                return (
-                  <tr key={p.id} className="hover:bg-slate-50/60 transition">
-                    <td className="py-3.5 px-4">
-                      <p className="font-semibold text-slate-800">{p.name}</p>
-                      <p className="text-[11px] text-slate-400">{p.brand} • {p.unit}</p>
-                    </td>
-                    <td className="py-3.5 px-4 font-mono text-slate-700">
-                      <span>{p.sku}</span>
-                      {p.barcode && <span className="block text-[10px] text-slate-400">{p.barcode}</span>}
-                    </td>
-                    <td className="py-3.5 px-4 text-slate-600">{p.categoryName || 'General'}</td>
-                    <td className="py-3.5 px-4 font-bold text-teal-700">₹{p.sellingPrice.toLocaleString('en-IN')}</td>
-                    <td className="py-3.5 px-4 text-slate-500">₹{p.mrp.toLocaleString('en-IN')}</td>
-                    <td className="py-3.5 px-4 text-slate-600">{p.taxRate}%</td>
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-1.5">
-                        <span className={`font-bold ${isLowStock ? 'text-amber-600' : 'text-slate-800'}`}>
-                          {p.stock}
-                        </span>
-                        {isLowStock && (
-                          <span className="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded">
-                            Low
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
-                      <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] font-bold">
-                        {p.status}
-                      </span>
+            <select
+              value={selectedCat}
+              onChange={(e) => setSelectedCat(e.target.value)}
+              className="px-3 py-1.5 bg-white border border-[#CBD2D7] rounded-lg text-xs font-semibold text-[#0B1320] focus:ring-1 focus:ring-[#081224] focus:outline-none"
+            >
+              <option value="">All Categories</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Products Table */}
+        <div className="bg-white rounded-xl border border-[#CBD2D7] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-[#F3F5F6] border-b border-[#CBD2D7] text-[#586570] font-semibold">
+                  <th className="py-3 px-4">Product Details</th>
+                  <th className="py-3 px-4">SKU / Barcode</th>
+                  <th className="py-3 px-4">Category & Brand</th>
+                  <th className="py-3 px-4 text-right">Selling Price</th>
+                  <th className="py-3 px-4 text-right">MRP</th>
+                  <th className="py-3 px-4 text-center">GST Rate</th>
+                  <th className="py-3 px-4 text-center">Available Stock</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#E2E7EC]">
+                {loading ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-[#80909D]">
+                      Loading catalog...
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                ) : products.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-[#80909D]">
+                      No products found.
+                    </td>
+                  </tr>
+                ) : (
+                  products.map((p) => {
+                    const isLowStock = p.stock <= p.minimumStock;
+                    return (
+                      <tr key={p.id} className="hover:bg-[#F3F5F6]/60 transition-colors">
+                        <td className="py-3 px-4">
+                          <p className="font-semibold text-[#0B1320]">{p.name}</p>
+                          <p className="text-[11px] text-[#586570] truncate max-w-xs">{p.description || '-'}</p>
+                        </td>
+                        <td className="py-3 px-4 font-mono font-medium text-[#0B1320]">
+                          <p>{p.sku}</p>
+                          {p.barcode && <p className="text-[10px] text-[#80909D]">{p.barcode}</p>}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="font-medium text-[#0B1320] bg-[#F3F5F6] border border-[#E2E7EC] px-2 py-0.5 rounded-md text-[11px]">
+                            {p.category?.name || 'General'}
+                          </span>
+                          <p className="text-[11px] text-[#586570] mt-0.5">{p.brand}</p>
+                        </td>
+                        <td className="py-3 px-4 text-right font-bold text-[#0B1320]">
+                          ₹{Number(p.sellingPrice).toLocaleString('en-IN')}
+                        </td>
+                        <td className="py-3 px-4 text-right text-[#586570]">
+                          ₹{Number(p.mrp).toLocaleString('en-IN')}
+                        </td>
+                        <td className="py-3 px-4 text-center font-mono font-medium text-[#0B1320]">
+                          {p.taxRate}%
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
+                              isLowStock
+                                ? 'bg-[#FDF2F2] text-[#991B1B] border-[#F8C4C4]'
+                                : 'bg-[#E6F4DD] text-[#2E6819] border-[#B4E39C]'
+                            }`}
+                          >
+                            {p.stock} {p.unit}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
 
-      {/* Add Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-base font-bold text-slate-800 mb-4">Add Catalog Product</h3>
-            <form onSubmit={handleCreateProduct} className="space-y-3 text-xs">
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Product Name *</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg"
-                />
+        {/* Modal */}
+        {showAddModal && (
+          <div className="fixed inset-0 bg-[#081224]/30 backdrop-blur-[2px] z-50 flex items-center justify-center p-4">
+            <div className="bg-white border border-[#CBD2D7] rounded-xl max-w-lg w-full p-6 shadow-xl max-h-[90vh] overflow-y-auto animate-in fade-in">
+              <div className="flex items-center justify-between pb-3 border-b border-[#E2E7EC]">
+                <h3 className="text-base font-bold text-[#0B1320]">Add New Catalog Item</h3>
+                <button onClick={() => setShowAddModal(false)} className="text-[#586570] hover:text-[#0B1320]">
+                  <X className="w-4 h-4" />
+                </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <form onSubmit={handleCreateProduct} className="py-4 space-y-3.5 text-xs">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">SKU *</label>
+                  <label className="block font-semibold text-[#0B1320] mb-1">Product Title</label>
                   <input
                     type="text"
                     required
-                    value={formData.sku}
-                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                    placeholder="e.g. ACC-CHG-65W"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="e.g. Samsung 45W Power Adapter"
+                    className="w-full px-3 py-2 bg-white border border-[#CBD2D7] rounded-lg focus:ring-1 focus:ring-[#081224] focus:outline-none"
                   />
                 </div>
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Category *</label>
-                  <select
-                    required
-                    value={formData.categoryId}
-                    onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
-                  >
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Selling Price (₹)</label>
-                  <input
-                    type="number"
-                    required
-                    value={formData.sellingPrice}
-                    onChange={(e) => setFormData({ ...formData, sellingPrice: parseFloat(e.target.value) })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg"
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-[#0B1320] mb-1">SKU Code</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.sku}
+                      onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                      placeholder="SAM-45W-BLK"
+                      className="w-full px-3 py-2 bg-white border border-[#CBD2D7] rounded-lg focus:ring-1 focus:ring-[#081224] focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-[#0B1320] mb-1">Category</label>
+                    <select
+                      required
+                      value={formData.categoryId}
+                      onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                      className="w-full px-3 py-2 bg-white border border-[#CBD2D7] rounded-lg focus:ring-1 focus:ring-[#081224] focus:outline-none"
+                    >
+                      {categories.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">MRP (₹)</label>
-                  <input
-                    type="number"
-                    required
-                    value={formData.mrp}
-                    onChange={(e) => setFormData({ ...formData, mrp: parseFloat(e.target.value) })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">GST Tax Rate (%)</label>
-                  <input
-                    type="number"
-                    required
-                    value={formData.taxRate}
-                    onChange={(e) => setFormData({ ...formData, taxRate: parseFloat(e.target.value) })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg"
-                  />
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Initial Stock</label>
-                  <input
-                    type="number"
-                    value={formData.stock}
-                    onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value, 10) })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg"
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-[#0B1320] mb-1">Selling Price (₹)</label>
+                    <input
+                      type="number"
+                      required
+                      value={formData.sellingPrice}
+                      onChange={(e) => setFormData({ ...formData, sellingPrice: parseFloat(e.target.value) })}
+                      className="w-full px-3 py-2 bg-white border border-[#CBD2D7] rounded-lg focus:ring-1 focus:ring-[#081224] focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-[#0B1320] mb-1">MRP (₹)</label>
+                    <input
+                      type="number"
+                      required
+                      value={formData.mrp}
+                      onChange={(e) => setFormData({ ...formData, mrp: parseFloat(e.target.value) })}
+                      className="w-full px-3 py-2 bg-white border border-[#CBD2D7] rounded-lg focus:ring-1 focus:ring-[#081224] focus:outline-none"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Minimum Stock Alert</label>
-                  <input
-                    type="number"
-                    value={formData.minimumStock}
-                    onChange={(e) => setFormData({ ...formData, minimumStock: parseInt(e.target.value, 10) })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg"
-                  />
-                </div>
-              </div>
 
-              <div className="flex justify-end gap-2 pt-3">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="px-3 py-2 border border-slate-200 text-slate-600 rounded-lg"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-teal-600 text-white font-semibold rounded-lg"
-                >
-                  Save Product
-                </button>
-              </div>
-            </form>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="block font-semibold text-[#0B1320] mb-1">Tax Rate (%)</label>
+                    <input
+                      type="number"
+                      value={formData.taxRate}
+                      onChange={(e) => setFormData({ ...formData, taxRate: parseFloat(e.target.value) })}
+                      className="w-full px-3 py-2 bg-white border border-[#CBD2D7] rounded-lg focus:ring-1 focus:ring-[#081224] focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-[#0B1320] mb-1">Current Stock</label>
+                    <input
+                      type="number"
+                      value={formData.stock}
+                      onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) })}
+                      className="w-full px-3 py-2 bg-white border border-[#CBD2D7] rounded-lg focus:ring-1 focus:ring-[#081224] focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-[#0B1320] mb-1">Min. Alert Stock</label>
+                    <input
+                      type="number"
+                      value={formData.minimumStock}
+                      onChange={(e) => setFormData({ ...formData, minimumStock: parseInt(e.target.value) })}
+                      className="w-full px-3 py-2 bg-white border border-[#CBD2D7] rounded-lg focus:ring-1 focus:ring-[#081224] focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-4 border-t border-[#E2E7EC]">
+                  <Button variant="secondary" onClick={() => setShowAddModal(false)}>
+                    Cancel
+                  </Button>
+                  <Button variant="primary" type="submit">
+                    Save Item
+                  </Button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </AdminShell>
   );
 }

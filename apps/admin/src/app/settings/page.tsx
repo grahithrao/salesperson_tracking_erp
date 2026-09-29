@@ -2,11 +2,12 @@
 
 import React, { useEffect, useState } from 'react';
 import AdminShell from '@/components/layout/AdminShell';
+import Button from '@/components/ui/Button';
 import { Settings, Shield, Sliders, Check, Save } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 export default function SettingsPage() {
-  const { token, user } = useAuth();
+  const { token } = useAuth();
   const [settings, setSettings] = useState<any[]>([]);
   const [permissions, setPermissions] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'system' | 'roles'>('system');
@@ -58,148 +59,150 @@ export default function SettingsPage() {
   const handleTogglePermission = async (userId: string, permKey: string, currentValue: boolean) => {
     try {
       const updated = { [permKey]: !currentValue };
-      const res = await fetch(`/api/settings/permissions/${userId}`, {
+      await fetch(`/api/settings/permissions/${userId}`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(updated),
       });
-      if (res.ok) {
-        setPermissions((prev) =>
-          prev.map((p) => (p.userId === userId ? { ...p, [permKey]: !currentValue } : p))
-        );
-      }
+      fetchSettings();
     } catch (e) {
       console.error(e);
     }
   };
 
   return (
-    <AdminShell title="System Configuration & Permissions">
-      <div className="flex border-b border-slate-200 mb-6 gap-2">
-        <button
-          onClick={() => setActiveTab('system')}
-          className={`pb-3 px-4 text-xs font-semibold border-b-2 transition ${
-            activeTab === 'system'
-              ? 'border-teal-600 text-teal-700 font-bold'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
-          }`}
-        >
-          Operational Settings
-        </button>
-        <button
-          onClick={() => setActiveTab('roles')}
-          className={`pb-3 px-4 text-xs font-semibold border-b-2 transition ${
-            activeTab === 'roles'
-              ? 'border-teal-600 text-teal-700 font-bold'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
-          }`}
-        >
-          Manager Permissions Matrix
-        </button>
-      </div>
-
-      {statusMsg && (
-        <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-xs font-medium">
-          {statusMsg}
+    <AdminShell title="System Configuration">
+      <div className="space-y-6 max-w-4xl">
+        {/* Header Panel */}
+        <div className="bg-white border border-[#CBD2D7] rounded-xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <span className="text-[11px] font-semibold tracking-wider uppercase text-[#586570]">
+              Administration
+            </span>
+            <h1 className="text-xl md:text-2xl font-bold text-[#0B1320] mt-0.5">
+              ERP Settings & Security Roles
+            </h1>
+            <p className="text-xs text-[#586570] mt-1">
+              Configure geofence tolerance, tracking frequencies, timezone policies, and role-based permissions.
+            </p>
+          </div>
         </div>
-      )}
 
-      {activeTab === 'system' && (
-        <div className="bg-white rounded-xl border border-slate-200/90 shadow-sm p-6 max-w-3xl">
-          <div className="space-y-5 divide-y divide-slate-100">
-            {settings.map((s) => (
-              <div key={s.key} className="pt-4 first:pt-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <label className="text-xs font-bold text-slate-800 font-mono">{s.key}</label>
-                  <p className="text-[11px] text-slate-500 mt-0.5">{s.description}</p>
-                </div>
-                <div className="w-full sm:w-60">
-                  {s.key.includes('required') ? (
-                    <select
-                      value={s.value}
-                      onChange={(e) => handleSettingChange(s.key, e.target.value)}
-                      className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium"
-                    >
-                      <option value="true">Enabled (Yes)</option>
-                      <option value="false">Disabled (No)</option>
-                    </select>
-                  ) : (
-                    <input
-                      type="text"
-                      value={s.value}
-                      onChange={(e) => handleSettingChange(s.key, e.target.value)}
-                      className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs"
-                    />
-                  )}
-                </div>
+        {/* Tab Selection */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setActiveTab('system')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+              activeTab === 'system'
+                ? 'bg-[#081224] text-white border-[#081224]'
+                : 'bg-white text-[#586570] border-[#CBD2D7] hover:bg-[#F3F5F6]'
+            }`}
+          >
+            System Parameters
+          </button>
+          <button
+            onClick={() => setActiveTab('roles')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+              activeTab === 'roles'
+                ? 'bg-[#081224] text-white border-[#081224]'
+                : 'bg-white text-[#586570] border-[#CBD2D7] hover:bg-[#F3F5F6]'
+            }`}
+          >
+            Manager & User Permissions
+          </button>
+        </div>
+
+        {/* System Settings Form */}
+        {activeTab === 'system' && (
+          <div className="bg-white border border-[#CBD2D7] rounded-xl p-6 space-y-6">
+            {statusMsg && (
+              <div className="p-3 bg-[#E6F4DD] border border-[#B4E39C] text-[#2E6819] text-xs font-medium rounded-lg flex items-center gap-2">
+                <Check className="w-4 h-4" />
+                <span>{statusMsg}</span>
               </div>
-            ))}
-          </div>
+            )}
 
-          <div className="mt-8 pt-4 border-t border-slate-200 flex justify-end">
-            <button
-              onClick={handleSaveSettings}
-              disabled={saving}
-              className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-semibold shadow-sm transition disabled:opacity-60"
-            >
-              <Save className="w-3.5 h-3.5" />
-              <span>{saving ? 'Saving...' : 'Save Configuration'}</span>
-            </button>
-          </div>
-        </div>
-      )}
+            <div className="divide-y divide-[#E2E7EC] text-xs">
+              {settings.map((s) => (
+                <div key={s.key} className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="max-w-md">
+                    <p className="font-semibold text-[#0B1320] font-mono text-[13px]">{s.key}</p>
+                    <p className="text-[#586570] mt-0.5">{s.description || 'System policy threshold parameter.'}</p>
+                  </div>
 
-      {activeTab === 'roles' && (
-        <div className="bg-white rounded-xl border border-slate-200/90 shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-slate-200 bg-slate-50/50">
-            <h3 className="text-xs font-bold text-slate-800">Manager Role Capability Matrix (Section 30)</h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">Toggle specific administrative permissions for field managers</p>
+                  <div className="w-full sm:w-64">
+                    {s.value === 'true' || s.value === 'false' ? (
+                      <select
+                        value={s.value}
+                        onChange={(e) => handleSettingChange(s.key, e.target.value)}
+                        className="w-full px-3 py-1.5 bg-white border border-[#CBD2D7] rounded-lg text-xs font-semibold text-[#0B1320] focus:ring-1 focus:ring-[#081224] focus:outline-none"
+                      >
+                        <option value="true">Enabled (true)</option>
+                        <option value="false">Disabled (false)</option>
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        value={s.value}
+                        onChange={(e) => handleSettingChange(s.key, e.target.value)}
+                        className="w-full px-3 py-1.5 bg-white border border-[#CBD2D7] rounded-lg text-xs text-[#0B1320] font-semibold focus:ring-1 focus:ring-[#081224] focus:outline-none"
+                      />
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-4 border-t border-[#E2E7EC] flex justify-end">
+              <Button
+                variant="primary"
+                onClick={handleSaveSettings}
+                disabled={saving}
+                icon={<Save className="w-4 h-4" />}
+              >
+                {saving ? 'Saving...' : 'Save Configuration'}
+              </Button>
+            </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
-                  <th className="py-3 px-4">Manager Name</th>
-                  <th className="py-3 px-3 text-center">Dashboard</th>
-                  <th className="py-3 px-3 text-center">Manage Users</th>
-                  <th className="py-3 px-3 text-center">Clients</th>
-                  <th className="py-3 px-3 text-center">Assign Clients</th>
-                  <th className="py-3 px-3 text-center">GPS Tracking</th>
-                  <th className="py-3 px-3 text-center">Approve Orders</th>
-                  <th className="py-3 px-3 text-center">Verify Payments</th>
-                  <th className="py-3 px-3 text-center">Export Reports</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {permissions.map((p) => (
-                  <tr key={p.id}>
-                    <td className="py-3 px-4 font-semibold text-slate-800">{p.user?.name || 'Manager'}</td>
-                    {[
-                      'canViewDashboard',
-                      'canManageUsers',
-                      'canManageClients',
-                      'canAssignClients',
-                      'canViewGps',
-                      'canApproveOrders',
-                      'canVerifyPayments',
-                      'canExportReports',
-                    ].map((permKey) => (
-                      <td key={permKey} className="py-3 px-3 text-center">
+        )}
+
+        {/* Roles & Permissions */}
+        {activeTab === 'roles' && (
+          <div className="bg-white border border-[#CBD2D7] rounded-xl p-6">
+            <h3 className="text-sm font-bold text-[#0B1320] mb-1">Granular Role Permissions</h3>
+            <p className="text-xs text-[#586570] mb-6">
+              Configure access control permissions for managerial and administrative staff.
+            </p>
+
+            <div className="space-y-4">
+              {permissions.map((p) => (
+                <div key={p.id} className="p-4 rounded-xl border border-[#CBD2D7] bg-[#F3F5F6] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-bold text-[#0B1320] text-sm">{p.userName}</p>
+                      <p className="text-xs text-[#586570]">{p.email} • Role: {p.role}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-2 border-t border-[#E2E7EC]">
+                    {Object.entries(p.permissions || {}).map(([perm, val]) => (
+                      <label key={perm} className="flex items-center gap-2 cursor-pointer text-[#0B1320] select-none">
                         <input
                           type="checkbox"
-                          checked={Boolean(p[permKey])}
-                          onChange={() => handleTogglePermission(p.userId, permKey, Boolean(p[permKey]))}
-                          className="rounded text-teal-600 focus:ring-teal-500 w-4 h-4 cursor-pointer"
+                          checked={Boolean(val)}
+                          onChange={() => handleTogglePermission(p.userId, perm, Boolean(val))}
+                          className="rounded text-[#081224] focus:ring-[#081224]"
                         />
-                      </td>
+                        <span className="capitalize">{perm.replace(/_/g, ' ')}</span>
+                      </label>
                     ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </AdminShell>
   );
 }

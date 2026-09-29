@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Navigation2, Lock, User, AlertCircle, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Lock, User, AlertCircle, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import Button from '@/components/ui/Button';
 
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState('admin@erp.com');
@@ -45,99 +46,96 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-teal-50/30 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white border border-slate-200/80 rounded-2xl shadow-xl p-8 backdrop-blur-sm">
-        {/* Logo and Title */}
+    <div className="min-h-screen bg-[#F5F7F8] flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white border border-[#CBD2D7] rounded-xl shadow-none p-8">
+        {/* Brand Block */}
         <div className="flex flex-col items-center text-center mb-8">
-          <div className="w-12 h-12 rounded-xl bg-teal-600 flex items-center justify-center text-white shadow-lg shadow-teal-600/30 mb-3">
-            <Navigation2 className="w-6 h-6" />
+          <div className="w-10 h-10 rounded-lg bg-[#081224] flex items-center justify-center text-white mb-3">
+            <div className="w-5 h-5 border-2 border-white/90 rounded-[3px] flex items-center justify-center">
+              <div className="w-1.5 h-1.5 bg-[#B4E39C] rounded-[1px]" />
+            </div>
           </div>
-          <h1 className="text-xl font-bold text-slate-800 tracking-tight">FIELD TRACK ERP</h1>
-          <p className="text-xs text-slate-500 mt-1">Sales Management & GPS Tracking Suite</p>
+          <h1 className="text-xl font-bold text-[#0B1320] tracking-tight">FieldTrack ERP</h1>
+          <p className="text-xs text-[#586570] mt-1">Sales Management & GPS Tracking Suite</p>
         </div>
 
         {error && (
-          <div className="mb-6 p-3 rounded-lg bg-red-50 border border-red-200 flex items-start gap-2.5 text-xs text-red-700">
-            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-500" />
+          <div className="mb-6 p-3 rounded-lg bg-[#FDF2F2] border border-[#F8C4C4] flex items-start gap-2.5 text-xs text-[#991B1B]">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
         )}
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+            <label className="block text-xs font-semibold text-[#0B1320] mb-1.5">
               Employee Code, Mobile, or Email
             </label>
             <div className="relative">
-              <User className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+              <User className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#80909D]" />
               <input
                 type="text"
+                required
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                required
-                placeholder="e.g. admin@erp.com or EMP-001"
-                className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition"
+                placeholder="admin@erp.com"
+                className="w-full pl-9 pr-3 py-2 text-xs bg-white border border-[#CBD2D7] rounded-lg text-[#0B1320] focus:ring-1 focus:ring-[#081224] focus:outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">Password</label>
+            <label className="block text-xs font-semibold text-[#0B1320] mb-1.5">
+              Security Password
+            </label>
             <div className="relative">
-              <Lock className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+              <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#80909D]" />
               <input
                 type="password"
+                required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="••••••••"
-                className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition"
+                placeholder="••••••••••••"
+                className="w-full pl-9 pr-3 py-2 text-xs bg-white border border-[#CBD2D7] rounded-lg text-[#0B1320] focus:ring-1 focus:ring-[#081224] focus:outline-none"
               />
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full mt-2 py-2.5 px-4 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white text-sm font-semibold rounded-lg shadow-md shadow-teal-600/20 flex items-center justify-center gap-2 transition disabled:opacity-60"
-          >
-            {loading ? (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <>
-                <span>Sign In to Console</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
+          <div className="pt-2">
+            <Button
+              type="submit"
+              variant="primary"
+              size="md"
+              disabled={loading}
+              className="w-full py-2.5"
+              icon={<ArrowRight className="w-4 h-4" />}
+            >
+              {loading ? 'Authenticating...' : 'Sign In to Workspace'}
+            </Button>
+          </div>
         </form>
 
-        {/* Quick Demo Credentials */}
-        <div className="mt-8 pt-6 border-t border-slate-100">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-3 text-center">
-            Quick Demo Accounts
+        {/* Demo Credentials Quick-Fill */}
+        <div className="mt-8 pt-6 border-t border-[#E2E7EC]">
+          <p className="text-[11px] font-semibold text-[#586570] uppercase tracking-wider mb-2.5 text-center">
+            Quick-Fill Seed Accounts
           </p>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => setDemoCredentials('admin@erp.com')}
-              className="py-1.5 px-2 bg-slate-50 hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-md text-[11px] font-medium text-slate-700 hover:text-teal-700 transition text-center"
+              className="p-2 rounded-lg bg-[#F3F5F6] border border-[#CBD2D7] hover:border-[#081224] text-left transition-colors"
             >
-              Super Admin
+              <p className="text-[11px] font-bold text-[#0B1320]">Super Admin</p>
+              <p className="text-[10px] text-[#586570]">Full organization</p>
             </button>
             <button
               type="button"
               onClick={() => setDemoCredentials('manager@erp.com')}
-              className="py-1.5 px-2 bg-slate-50 hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-md text-[11px] font-medium text-slate-700 hover:text-teal-700 transition text-center"
+              className="p-2 rounded-lg bg-[#F3F5F6] border border-[#CBD2D7] hover:border-[#081224] text-left transition-colors"
             >
-              Manager
-            </button>
-            <button
-              type="button"
-              onClick={() => setDemoCredentials('rahul@erp.com')}
-              className="py-1.5 px-2 bg-slate-50 hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-md text-[11px] font-medium text-slate-700 hover:text-teal-700 transition text-center"
-            >
-              Salesperson
+              <p className="text-[11px] font-bold text-[#0B1320]">Team Manager</p>
+              <p className="text-[10px] text-[#586570]">Mangalore cluster</p>
             </button>
           </div>
         </div>
