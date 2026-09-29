@@ -1,5 +1,5 @@
-import { PrismaClient, Role, UserStatus, SalespersonStatus, OrderStatus, PaymentMethod, PaymentStatus, VisitOutcome, LedgerEntryType } from '@prisma/client';
-import * as bcrypt from 'bcryptjs';
+import { PrismaClient, Role, UserStatus, SalespersonStatus, AttendanceStatus, OrderStatus, PaymentMethod, PaymentStatus, VisitOutcome, LedgerEntryType } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
