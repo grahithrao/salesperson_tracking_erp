@@ -677,11 +677,121 @@ async function main() {
     ],
   });
 
+  // Seed Access Code for Rahul (Code: RAHUL12345)
+  const accessCodeHash = await bcrypt.hash('RAHUL12345', 10);
+  await prisma.userAccessCode.deleteMany({ where: { userId: rahulUser.id } });
+  await prisma.userAccessCode.create({
+    data: {
+      userId: rahulUser.id,
+      codeHash: accessCodeHash,
+      displayHint: '...345',
+      status: 'ACTIVE',
+      createdById: adminUser.id,
+    },
+  });
+
+  // Seed sample staff expenses
+  await prisma.expenseHistory.deleteMany({});
+  await prisma.expense.deleteMany({});
+
+  const exp1 = await prisma.expense.create({
+    data: {
+      expenseNumber: 'EXP-2026-001',
+      salespersonId: rahulUser.salespersonProfile!.id,
+      category: 'FUEL',
+      amount: 450.00,
+      currency: 'INR',
+      expenseDate: new Date(),
+      description: 'Fuel refill at Shell pump for client route visit',
+      status: 'SUBMITTED',
+      history: {
+        create: [
+          { action: 'CREATED', actorId: rahulUser.id, newStatus: 'DRAFT', comment: 'Draft created' },
+          { action: 'SUBMITTED', actorId: rahulUser.id, previousStatus: 'DRAFT', newStatus: 'SUBMITTED', comment: 'Submitted for manager review' },
+        ],
+      },
+    },
+  });
+
+  const exp2 = await prisma.expense.create({
+    data: {
+      expenseNumber: 'EXP-2026-002',
+      salespersonId: rahulUser.salespersonProfile!.id,
+      category: 'AUTO_RICKSHAW',
+      amount: 180.00,
+      currency: 'INR',
+      expenseDate: new Date(Date.now() - 86400000),
+      description: 'Auto fare from Central Station to Apex Supermarket',
+      status: 'APPROVED',
+      approvedBy: managerUser.id,
+      approvedAt: new Date(),
+      history: {
+        create: [
+          { action: 'CREATED', actorId: rahulUser.id, newStatus: 'DRAFT', comment: 'Draft created' },
+          { action: 'SUBMITTED', actorId: rahulUser.id, previousStatus: 'DRAFT', newStatus: 'SUBMITTED', comment: 'Submitted for manager review' },
+          { action: 'APPROVED', actorId: managerUser.id, previousStatus: 'SUBMITTED', newStatus: 'APPROVED', comment: 'Approved within travel allowance' },
+        ],
+      },
+    },
+  });
+
+  const exp3 = await prisma.expense.create({
+    data: {
+      expenseNumber: 'EXP-2026-003',
+      salespersonId: rahulUser.salespersonProfile!.id,
+      category: 'FOOD_MEALS',
+      amount: 320.00,
+      currency: 'INR',
+      expenseDate: new Date(Date.now() - 172800000),
+      description: 'Lunch during outstation territory route',
+      status: 'REIMBURSED',
+      approvedBy: managerUser.id,
+      approvedAt: new Date(Date.now() - 86400000),
+      reimbursedBy: adminUser.id,
+      reimbursedAt: new Date(),
+      reimbursementRef: 'UPI-774928190',
+      reimbursementMethod: 'UPI',
+      history: {
+        create: [
+          { action: 'CREATED', actorId: rahulUser.id, newStatus: 'DRAFT', comment: 'Draft created' },
+          { action: 'SUBMITTED', actorId: rahulUser.id, previousStatus: 'DRAFT', newStatus: 'SUBMITTED', comment: 'Submitted' },
+          { action: 'APPROVED', actorId: managerUser.id, previousStatus: 'SUBMITTED', newStatus: 'APPROVED', comment: 'Approved' },
+          { action: 'REIMBURSED', actorId: adminUser.id, previousStatus: 'APPROVED', newStatus: 'REIMBURSED', comment: 'Disbursed via UPI' },
+        ],
+      },
+    },
+  });
+
+  const exp4 = await prisma.expense.create({
+    data: {
+      expenseNumber: 'EXP-2026-004',
+      salespersonId: rahulUser.salespersonProfile!.id,
+      category: 'OTHER',
+      amount: 1200.00,
+      currency: 'INR',
+      expenseDate: new Date(Date.now() - 259200000),
+      description: 'Hardware store client sample display materials',
+      status: 'REJECTED',
+      rejectionReason: 'Missing tax invoice receipt; please attach official bill and resubmit.',
+      rejectedBy: managerUser.id,
+      rejectedAt: new Date(),
+      history: {
+        create: [
+          { action: 'CREATED', actorId: rahulUser.id, newStatus: 'DRAFT', comment: 'Draft created' },
+          { action: 'SUBMITTED', actorId: rahulUser.id, previousStatus: 'DRAFT', newStatus: 'SUBMITTED', comment: 'Submitted' },
+          { action: 'REJECTED', actorId: managerUser.id, previousStatus: 'SUBMITTED', newStatus: 'REJECTED', comment: 'Missing tax invoice receipt; please attach official bill and resubmit.' },
+        ],
+      },
+    },
+  });
+
   console.log('✅ Database seeded successfully!');
   console.log('🔑 Credentials:');
   console.log('   Admin: admin@erp.com / Password123!');
   console.log('   Manager: manager@erp.com / Password123!');
-  console.log('   Salesperson: rahul@erp.com / Password123! (or phone: 9876543212)');
+  console.log('   Salesperson (Password): rahul@erp.com / Password123! (or phone: 9876543212)');
+  console.log('   Salesperson (Access Code): Employee Code "EMP-001" or Mobile "9876543212" + Code "RAHUL12345"');
+  console.log('💳 Seeded 4 Staff Expenses: SUBMITTED (₹450), APPROVED (₹180), REIMBURSED (₹320), REJECTED (₹1,200)');
 }
 
 main()
