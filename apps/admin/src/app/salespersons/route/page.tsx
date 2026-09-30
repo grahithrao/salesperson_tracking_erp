@@ -15,6 +15,7 @@ import {
   CreditCard,
   Building2,
   ChevronRight,
+  Receipt,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -59,8 +60,8 @@ function RouteHistoryContent() {
   }, [token, selectedSpId, selectedDate]);
 
   const points = routeData?.points || [];
-  const events = routeData?.events || { visits: [], orders: [], payments: [] };
-  const totalEvents = events.visits.length + events.orders.length + events.payments.length;
+  const events = routeData?.events || { visits: [], orders: [], payments: [], expenses: [] };
+  const totalEvents = events.visits.length + events.orders.length + events.payments.length + (events.expenses?.length || 0);
 
   return (
     <AdminShell title="Daily Route History">
@@ -180,6 +181,22 @@ function RouteHistoryContent() {
                         <span className="font-bold text-[#2E6819]">₹{Number(p.amount).toLocaleString('en-IN')}</span>
                       </div>
                       <p className="text-[#586570]">Mode: {p.method} • {new Date(p.collectedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</p>
+                    </div>
+                  ))}
+
+                  {/* Expenses */}
+                  {events.expenses?.map((e: any) => (
+                    <div key={e.id} className="p-3 rounded-xl border border-amber-200 bg-amber-50/60 space-y-1.5 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-amber-900 flex items-center gap-1.5">
+                          <Receipt className="w-3.5 h-3.5 text-amber-700" />
+                          {e.expenseNumber}
+                        </span>
+                        <span className="font-bold text-amber-900">₹{Number(e.amount).toLocaleString('en-IN')}</span>
+                      </div>
+                      <p className="text-[#586570]">
+                        {e.category.replace(/_/g, ' ')} {e.merchantName ? `(${e.merchantName})` : ''} • {new Date(e.expenseDate).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                      </p>
                     </div>
                   ))}
                 </>

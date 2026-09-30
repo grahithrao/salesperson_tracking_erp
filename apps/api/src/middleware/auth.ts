@@ -86,7 +86,8 @@ export async function authenticateToken(req: Request, res: Response, next: NextF
   }
 }
 
-export function requireRole(...roles: Role[]) {
+export function requireRole(...roles: (Role | Role[])[]) {
+  const flatRoles = roles.flat();
   return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.user) {
       res.status(401).json({ error: 'Unauthorized' });
@@ -98,7 +99,7 @@ export function requireRole(...roles: Role[]) {
       return;
     }
 
-    if (!roles.includes(req.user.role)) {
+    if (!flatRoles.includes(req.user.role)) {
       res.status(403).json({ error: 'Forbidden: Insufficient privileges for this role' });
       return;
     }
@@ -106,6 +107,8 @@ export function requireRole(...roles: Role[]) {
     next();
   };
 }
+
+export const requireRoles = requireRole;
 
 export function requireManagerPermission(permissionKey: string) {
   return (req: Request, res: Response, next: NextFunction): void => {

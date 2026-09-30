@@ -7,7 +7,7 @@ const router = Router();
 
 interface SyncItem {
   localId: string;
-  type: 'START_DAY' | 'END_DAY' | 'VISIT_START' | 'VISIT_END' | 'ORDER' | 'PAYMENT' | 'GPS_BATCH';
+  type: 'START_DAY' | 'END_DAY' | 'VISIT_START' | 'VISIT_END' | 'ORDER' | 'PAYMENT' | 'GPS_BATCH' | 'EXPENSE';
   payload: any;
   idempotencyKey: string;
 }
@@ -102,8 +102,10 @@ router.post('/batch', authenticateToken, async (req: Request, res: Response): Pr
                 accuracy: p.accuracy || null,
                 speed: p.speed || null,
                 batteryLevel: p.batteryLevel || null,
+                clientPointId: p.clientPointId || p.id || undefined,
                 timestamp: new Date(p.timestamp || Date.now()),
               })),
+              skipDuplicates: true,
             });
             serverId = activeSession.id;
           }
@@ -225,6 +227,65 @@ router.post('/batch', authenticateToken, async (req: Request, res: Response): Pr
           },
         });
         serverId = payment.id;
+      } else if (item.type === 'EXPENSE') {
+        const {
+          category,
+          amount,
+          expenseDate,
+          description,
+          businessPurpose,
+          merchantName,
+          paymentMethod,
+          receiptUrl,
+          clientId,
+          visitId,
+          attendanceId,
+          latitude,
+          longitude,
+          status,
+          offlineId,
+        } = item.payload;
+
+        const currentYear = new Date().getFullYear();
+        const prefix = `EXP-${currentYear}-`;
+        const count = await prisma.expense.count();
+        const expenseNumber = `${prefix}${String(count + 1).padStart(6, '0')}`;
+        const isSubmitted = status === 'SUBMITTED';
+
+        const expense = await prisma.expense.create({
+          data: {
+            expenseNumber,
+            salespersonId: user.salespersonId!,
+            category,
+            amount,
+            expenseDate: new Date(expenseDate || Date.now()),
+            description,
+            businessPurpose,
+            merchantName,
+            paymentMethod: paymentMethod || 'CASH',
+            receiptUrl,
+            clientId,
+            visitId,
+            attendanceId,
+            latitude,
+            longitude,
+            status: isSubmitted ? 'SUBMITTED' : 'DRAFT',
+            submittedAt: isSubmitted ? new Date() : null,
+            offlineId: offlineId || item.localId,
+          },
+        });
+
+        await prisma.expenseHistory.create({
+          data: {
+            expenseId: expense.id,
+            actorId: user.id,
+            action: isSubmitted ? 'SUBMITTED_OFFLINE' : 'DRAFT_OFFLINE',
+            newStatus: expense.status,
+            comment: 'Offline-synchronized expense claim',
+          },
+        });
+
+        serverId = expense.id;
       }
 
       // Record idempotency

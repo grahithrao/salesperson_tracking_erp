@@ -4,6 +4,7 @@ import { createPaymentSchema, verifyPaymentSchema } from '@erp/shared';
 import { authenticateToken, getAuthorizedSalespersonIds, requireRole } from '../middleware/auth';
 import { logAuditEvent } from '../middleware/audit';
 import { generatePaymentReceiptPDF } from '../utils/pdfReceipt';
+import { notifyPaymentCollected, notifyPaymentVerified } from '../socket';
 
 const router = Router();
 
@@ -269,6 +270,8 @@ router.post('/', authenticateToken, async (req: Request, res: Response): Promise
     newValue: { receiptNumber: newPayment.receiptNumber, amount: newPayment.amount, status: newPayment.status },
   });
 
+  notifyPaymentCollected(newPayment);
+
   const responsePayload = { data: newPayment };
 
   if (parsed.idempotencyKey) {
@@ -357,6 +360,14 @@ router.post('/:id/verify', authenticateToken, requireRole(Role.SUPER_ADMIN, Role
     recordId: id,
     oldValue: { status: payment.status },
     newValue: { status: parsed.status, verifiedBy: user.name },
+  });
+
+  notifyPaymentVerified({
+    id,
+    receiptNumber: payment.receiptNumber,
+    salespersonId: payment.salespersonId,
+    status: parsed.status,
+    amount: payment.amount,
   });
 
   res.json({ message: `Payment successfully marked as ${parsed.status}` });

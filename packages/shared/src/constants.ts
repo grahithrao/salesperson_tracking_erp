@@ -59,6 +59,54 @@ export const SYNC_STATUSES = {
 } as const;
 export type SyncStatus = (typeof SYNC_STATUSES)[keyof typeof SYNC_STATUSES];
 
+export const EXPENSE_CATEGORIES = {
+  AUTO_RICKSHAW: 'AUTO_RICKSHAW',
+  BUS_TRAIN_METRO_TAXI: 'BUS_TRAIN_METRO_TAXI',
+  FUEL: 'FUEL',
+  FOOD_MEALS: 'FOOD_MEALS',
+  ACCOMMODATION: 'ACCOMMODATION',
+  PARKING_TOLLS: 'PARKING_TOLLS',
+  OTHER: 'OTHER',
+} as const;
+export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[keyof typeof EXPENSE_CATEGORIES];
+
+export const EXPENSE_STATUSES = {
+  DRAFT: 'DRAFT',
+  SUBMITTED: 'SUBMITTED',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  REIMBURSED: 'REIMBURSED',
+} as const;
+export type ExpenseStatus = (typeof EXPENSE_STATUSES)[keyof typeof EXPENSE_STATUSES];
+
+export const ACCESS_CODE_STATUSES = {
+  ACTIVE: 'ACTIVE',
+  EXPIRED: 'EXPIRED',
+  REVOKED: 'REVOKED',
+} as const;
+export type AccessCodeStatus = (typeof ACCESS_CODE_STATUSES)[keyof typeof ACCESS_CODE_STATUSES];
+
+export const SOCKET_EVENTS = {
+  // Connection
+  CONNECT: 'connect',
+  DISCONNECT: 'disconnect',
+  AUTHENTICATE: 'authenticate',
+  
+  // Real-time events
+  LOCATION_UPDATE: 'location:update',
+  ATTENDANCE_CHANGED: 'attendance:changed',
+  ORDER_CREATED: 'order:created',
+  ORDER_STATUS_CHANGED: 'order:status_changed',
+  PAYMENT_COLLECTED: 'payment:collected',
+  PAYMENT_VERIFIED: 'payment:verified',
+  CLIENT_ASSIGNED: 'client:assigned',
+  EXPENSE_SUBMITTED: 'expense:submitted',
+  EXPENSE_APPROVED: 'expense:approved',
+  EXPENSE_REJECTED: 'expense:rejected',
+  EXPENSE_REIMBURSED: 'expense:reimbursed',
+  NOTIFICATION_NEW: 'notification:new',
+} as const;
+
 export const DEFAULT_CONFIG = {
   VISIT_RADIUS_METERS: 100,
   TRACKING_INTERVAL_SECONDS: 60,

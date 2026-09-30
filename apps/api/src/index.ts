@@ -1,12 +1,16 @@
+import http from 'http';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { config } from './config';
 import { apiLimiter } from './middleware/rateLimiter';
 import { errorHandler } from './middleware/errorHandler';
+import { initSocketServer } from './socket';
 
 // Route imports
 import authRoutes from './routes/auth';
+import accessCodesRoutes from './routes/accessCodes';
+import expensesRoutes from './routes/expenses';
 import salespersonsRoutes from './routes/salespersons';
 import clientsRoutes from './routes/clients';
 import productsRoutes from './routes/products';
@@ -25,6 +29,10 @@ import docsRoutes from './routes/docs';
 import dashboardRoutes from './routes/dashboard';
 
 const app = express();
+const httpServer = http.createServer(app);
+
+// Initialize Socket.IO Server
+const io = initSocketServer(httpServer);
 
 // Security and utility middlewares
 app.use(helmet({ contentSecurityPolicy: false })); // allow swagger CDN
@@ -39,7 +47,13 @@ const getHealth = (_req: express.Request, res: express.Response) => {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     uptimeSeconds: Math.floor(process.uptime()),
-    version: '1.0.0',
+    version: '1.1.0',
+    features: {
+      socketIO: true,
+      accessCodeAuth: true,
+      expensesManagement: true,
+      routeTracking: true,
+    },
   });
 };
 app.get('/health', getHealth);
@@ -47,6 +61,8 @@ app.get('/api/health', getHealth);
 
 // Register API modules
 app.use('/api/auth', authRoutes);
+app.use('/api/access-codes', accessCodesRoutes);
+app.use('/api/expenses', expensesRoutes);
 app.use('/api/salespersons', salespersonsRoutes);
 app.use('/api/clients', clientsRoutes);
 app.use('/api/products', productsRoutes);
@@ -69,10 +85,11 @@ app.use(errorHandler);
 
 let server: any;
 if (require.main === module) {
-  server = app.listen(config.port, () => {
+  server = httpServer.listen(config.port, () => {
     console.log(`🚀 Sales ERP API running on http://localhost:${config.port}`);
     console.log(`📚 API Docs available at http://localhost:${config.port}/api/docs`);
+    console.log(`⚡ Socket.IO real-time engine active on port ${config.port}`);
   });
 }
 
-export { app, server };
+export { app, httpServer, server, io };

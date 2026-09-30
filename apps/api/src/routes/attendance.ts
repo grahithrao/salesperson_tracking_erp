@@ -3,6 +3,7 @@ import { prisma, Role, AttendanceStatus, SalespersonStatus } from '@erp/database
 import { startAttendanceSchema, endAttendanceSchema, calculatePathDistanceKm } from '@erp/shared';
 import { authenticateToken, getAuthorizedSalespersonIds } from '../middleware/auth';
 import { logAuditEvent } from '../middleware/audit';
+import { notifyAttendanceChange } from '../socket';
 
 const router = Router();
 
@@ -112,6 +113,12 @@ router.post('/start', authenticateToken, async (req: Request, res: Response): Pr
     module: 'ATTENDANCE',
     recordId: result.attendance.id,
     newValue: { salespersonId, loginAt: result.attendance.loginAt, lat: parsed.latitude, lng: parsed.longitude },
+  });
+
+  notifyAttendanceChange(salespersonId, {
+    ...result.attendance,
+    salespersonName: user.name,
+    dutyStatus: 'ON_DUTY',
   });
 
   const responsePayload = {
@@ -246,6 +253,15 @@ router.post('/end', authenticateToken, async (req: Request, res: Response): Prom
       where: { id: salespersonId },
       data: { status: SalespersonStatus.OFF_DUTY },
     });
+  });
+
+  notifyAttendanceChange(salespersonId, {
+    id: activeAttendance.id,
+    status: 'COMPLETED',
+    dutyStatus: 'OFF_DUTY',
+    logoutAt: logoutTime,
+    workingMinutes,
+    distanceKm,
   });
 
   const hours = Math.floor(workingMinutes / 60);

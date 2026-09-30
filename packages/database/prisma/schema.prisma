@@ -101,6 +101,10 @@ model User {
   assignedClientsLog   ClientAssignment[]   @relation("AssignedByUser")
   verifiedPayments     Payment[]            @relation("PaymentVerifier")
   approvedOrders       Order[]              @relation("OrderApprover")
+  accessCodes          UserAccessCode[]
+  approvedExpenses     Expense[]            @relation("ExpenseApprover")
+  rejectedExpenses     Expense[]            @relation("ExpenseRejecter")
+  reimbursedExpenses   Expense[]            @relation("ExpenseReimburser")
 
   @@map("users")
 }
@@ -160,6 +164,7 @@ model Salesperson {
   locationSessions   LocationSession[]
   locationPoints     LocationPoint[]
   visits             ClientVisit[]
+  expenses           Expense[]
 
   @@index([employeeCode])
   @@index([status])
@@ -195,6 +200,7 @@ model Client {
   payments       Payment[]
   visits         ClientVisit[]
   ledgerEntries  ClientLedgerEntry[]
+  expenses       Expense[]
 
   @@index([city])
   @@index([status])
@@ -386,6 +392,7 @@ model Attendance {
 
   salesperson       Salesperson      @relation(fields: [salespersonId], references: [id], onDelete: Cascade)
   sessions          LocationSession[]
+  expenses          Expense[]
 
   @@unique([salespersonId, date, status])
   @@index([salespersonId, date])
@@ -411,18 +418,22 @@ model LocationSession {
 }
 
 model LocationPoint {
-  id            String          @id @default(uuid())
-  sessionId     String
-  salespersonId String
-  latitude      Float
-  longitude     Float
-  accuracy      Float?
-  speed         Float?
-  heading       Float?
-  batteryLevel  Float?
-  networkType   String?
-  deviceId      String?
-  timestamp     DateTime        @default(now())
+  id               String          @id @default(uuid())
+  sessionId        String
+  salespersonId    String
+  latitude         Float
+  longitude        Float
+  accuracy         Float?
+  speed            Float?
+  heading          Float?
+  batteryLevel     Float?
+  networkType      String?
+  deviceId         String?
+  clientPointId    String?         @unique
+  isFiltered       Boolean         @default(false)
+  filterReason     String?
+  serverReceivedAt DateTime        @default(now())
+  timestamp        DateTime        @default(now())
 
   session       LocationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   salesperson   Salesperson     @relation(fields: [salespersonId], references: [id], onDelete: Cascade)
@@ -453,6 +464,7 @@ model ClientVisit {
 
   client             Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
   salesperson        Salesperson  @relation(fields: [salespersonId], references: [id], onDelete: Cascade)
+  expenses           Expense[]
 
   @@index([clientId, startedAt])
   @@index([salespersonId, startedAt])
@@ -515,4 +527,115 @@ model SystemSetting {
   updatedAt   DateTime @updatedAt
 
   @@map("system_settings")
+}
+
+enum AccessCodeStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+}
+
+model UserAccessCode {
+  id             String           @id @default(uuid())
+  userId         String
+  codeHash       String
+  displayHint    String?
+  status         AccessCodeStatus @default(ACTIVE)
+  expiresAt      DateTime?
+  failedAttempts Int              @default(0)
+  lockedUntil    DateTime?
+  lastUsedAt     DateTime?
+  createdById    String?
+  revokedAt      DateTime?
+  revokedById    String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@map("user_access_codes")
+}
+
+enum ExpenseCategory {
+  AUTO_RICKSHAW
+  BUS_TRAIN_METRO_TAXI
+  FUEL
+  FOOD_MEALS
+  ACCOMMODATION
+  PARKING_TOLLS
+  OTHER
+}
+
+enum ExpenseStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+  REIMBURSED
+}
+
+model Expense {
+  id                  String          @id @default(uuid())
+  expenseNumber       String          @unique
+  salespersonId       String
+  category            ExpenseCategory
+  amount              Decimal         @db.Decimal(10, 2)
+  currency            String          @default("INR")
+  expenseDate         DateTime
+  description         String
+  businessPurpose     String?
+  merchantName        String?
+  paymentMethod       String          @default("CASH")
+  receiptUrl          String?
+  clientId            String?
+  visitId             String?
+  attendanceId        String?
+  latitude            Float?
+  longitude           Float?
+  status              ExpenseStatus   @default(DRAFT)
+  rejectionReason     String?
+  submittedAt         DateTime?
+  approvedAt          DateTime?
+  approvedBy          String?
+  rejectedAt          DateTime?
+  rejectedBy          String?
+  reimbursedAt        DateTime?
+  reimbursedBy        String?
+  reimbursementRef    String?
+  reimbursementMethod String?
+  offlineId           String?         @unique
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  salesperson         Salesperson     @relation(fields: [salespersonId], references: [id], onDelete: Cascade)
+  client              Client?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  visit               ClientVisit?    @relation(fields: [visitId], references: [id], onDelete: SetNull)
+  attendance          Attendance?     @relation(fields: [attendanceId], references: [id], onDelete: SetNull)
+  approver            User?           @relation("ExpenseApprover", fields: [approvedBy], references: [id], onDelete: SetNull)
+  rejecter            User?           @relation("ExpenseRejecter", fields: [rejectedBy], references: [id], onDelete: SetNull)
+  reimburser          User?           @relation("ExpenseReimburser", fields: [reimbursedBy], references: [id], onDelete: SetNull)
+  history             ExpenseHistory[]
+
+  @@index([salespersonId, status])
+  @@index([expenseDate])
+  @@index([category])
+  @@map("expenses")
+}
+
+model ExpenseHistory {
+  id             String         @id @default(uuid())
+  expenseId      String
+  actorId        String?
+  action         String
+  previousStatus ExpenseStatus?
+  newStatus      ExpenseStatus
+  comment        String?
+  snapshot       Json?
+  createdAt      DateTime       @default(now())
+
+  expense        Expense        @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+
+  @@index([expenseId, createdAt])
+  @@map("expense_histories")
 }

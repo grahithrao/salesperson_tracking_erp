@@ -3,6 +3,7 @@ import { prisma, Role, OrderStatus, LedgerEntryType } from '@erp/database';
 import { createOrderSchema, updateOrderStatusSchema, calculateOrderTotals } from '@erp/shared';
 import { authenticateToken, getAuthorizedSalespersonIds, requireRole } from '../middleware/auth';
 import { logAuditEvent } from '../middleware/audit';
+import { notifyOrderCreated, notifyOrderStatusChanged } from '../socket';
 
 const router = Router();
 
@@ -273,6 +274,8 @@ router.post('/', authenticateToken, async (req: Request, res: Response): Promise
     newValue: { orderNumber: newOrder.orderNumber, grandTotal: newOrder.grandTotal, status: newOrder.status },
   });
 
+  notifyOrderCreated(newOrder);
+
   const responsePayload = { data: newOrder };
 
   // Save idempotency key if provided
@@ -391,6 +394,14 @@ router.put('/:id/status', authenticateToken, requireRole(Role.SUPER_ADMIN, Role.
     recordId: id,
     oldValue: { status: prevStatus },
     newValue: { status: nextStatus, rejectedReason: parsed.rejectedReason },
+  });
+
+  notifyOrderStatusChanged({
+    id,
+    orderNumber: order.orderNumber,
+    salespersonId: order.salespersonId,
+    status: nextStatus,
+    previousStatus: prevStatus,
   });
 
   res.json({ message: `Order status updated to ${nextStatus}` });

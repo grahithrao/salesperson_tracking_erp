@@ -2,11 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Bell, Navigation, Clock } from 'lucide-react';
+import { Bell, Navigation, Clock, Radio } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useSocket } from '@/context/SocketContext';
 
 export default function Header({ title }: { title: string }) {
   const { token } = useAuth();
+  const { isConnected, connectionStatus, lastEvent } = useSocket();
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -33,6 +35,13 @@ export default function Header({ title }: { title: string }) {
     const interval = setInterval(fetchNotifications, 20000);
     return () => clearInterval(interval);
   }, [token]);
+
+  // Instantly re-fetch when socket emits any business event
+  useEffect(() => {
+    if (lastEvent) {
+      fetchNotifications();
+    }
+  }, [lastEvent]);
 
   useEffect(() => {
     const updateTime = () => {
@@ -81,6 +90,30 @@ export default function Header({ title }: { title: string }) {
         <div className="hidden lg:flex items-center gap-1.5 text-xs text-[#586570] font-mono bg-[#F3F5F6] px-3 py-1.5 rounded-lg border border-[#E2E7EC]">
           <Clock className="w-3.5 h-3.5 text-[#80909D]" />
           <span>{currentTime || 'Syncing clock...'}</span>
+        </div>
+
+        {/* Real-time Socket Indicator */}
+        <div
+          title={`Socket connection: ${connectionStatus}`}
+          className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
+            isConnected
+              ? 'bg-[#E6F4DD] text-[#2E6819] border-[#B4E39C]'
+              : connectionStatus === 'connecting'
+              ? 'bg-amber-50 text-amber-700 border-amber-200'
+              : 'bg-rose-50 text-rose-700 border-rose-200'
+          }`}
+        >
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${
+              isConnected
+                ? 'bg-[#2E6819] animate-pulse'
+                : connectionStatus === 'connecting'
+                ? 'bg-amber-500 animate-ping'
+                : 'bg-rose-500'
+            }`}
+          />
+          <Radio className="w-3 h-3 stroke-[2]" />
+          <span>{isConnected ? 'Socket Live' : connectionStatus === 'connecting' ? 'Connecting...' : 'Offline'}</span>
         </div>
 
         <Link

@@ -15,7 +15,7 @@ import { getCurrentCoordinates } from '../services/locationService';
 import { enqueueOperation } from '../storage/db';
 
 interface HomeScreenProps {
-  onNavigateTab: (tab: 'Home' | 'Clients' | 'Orders' | 'Collect' | 'Profile') => void;
+  onNavigateTab: (tab: 'Home' | 'Clients' | 'Orders' | 'Expenses' | 'More' | 'Collect') => void;
 }
 
 export default function HomeScreen({ onNavigateTab }: HomeScreenProps) {
@@ -213,20 +213,30 @@ export default function HomeScreen({ onNavigateTab }: HomeScreenProps) {
         </View>
       </View>
 
-      {/* Primary Action Button (Start / End Day) */}
-      <TouchableOpacity
-        style={[styles.primaryActionBtn, isOnDuty ? styles.endDayBtn : styles.startDayBtn]}
-        onPress={isOnDuty ? handleEndDay : handleStartDay}
-        disabled={dutyActionLoading}
-      >
-        {dutyActionLoading ? (
-          <ActivityIndicator color="#ffffff" size="small" />
-        ) : (
-          <Text style={styles.primaryActionBtnText}>
-            {isOnDuty ? 'End Day & Close Shift' : 'Start Day (Enable Tracking)'}
-          </Text>
-        )}
-      </TouchableOpacity>
+      {/* Primary Action Buttons (Start / End Day and Collect Payment) */}
+      <View style={{ gap: 10 }}>
+        <TouchableOpacity
+          style={[styles.primaryActionBtn, isOnDuty ? styles.endDayBtn : styles.startDayBtn]}
+          onPress={isOnDuty ? handleEndDay : handleStartDay}
+          disabled={dutyActionLoading}
+        >
+          {dutyActionLoading ? (
+            <ActivityIndicator color="#ffffff" size="small" />
+          ) : (
+            <Text style={styles.primaryActionBtnText}>
+              {isOnDuty ? 'End Day & Close Shift' : 'Start Day (Enable GPS Tracking)'}
+            </Text>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.collectPaymentActionBtn}
+          onPress={() => onNavigateTab('Collect')}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.collectPaymentActionBtnText}>💳 Collect Customer Payment</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Quick Action Buttons (Section 4) */}
       <Text style={[styles.sectionTitle, { marginTop: 24, marginBottom: 12 }]}>QUICK ACTIONS</Text>
@@ -243,14 +253,14 @@ export default function HomeScreen({ onNavigateTab }: HomeScreenProps) {
           <Text style={styles.actionCardSub}>Product catalog & cart</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.actionCard} onPress={() => onNavigateTab('Collect')}>
-          <Text style={styles.actionCardTitle}>Collect Payment</Text>
-          <Text style={styles.actionCardSub}>Cash, UPI, receipts</Text>
+        <TouchableOpacity style={styles.actionCard} onPress={() => onNavigateTab('Expenses')}>
+          <Text style={styles.actionCardTitle}>Staff Expenses</Text>
+          <Text style={styles.actionCardSub}>Travel, meals, fuel</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.actionCard} onPress={() => onNavigateTab('Profile')}>
-          <Text style={styles.actionCardTitle}>Today's Route</Text>
-          <Text style={styles.actionCardSub}>Milage & summary</Text>
+        <TouchableOpacity style={styles.actionCard} onPress={() => onNavigateTab('More')}>
+          <Text style={styles.actionCardTitle}>More Tools</Text>
+          <Text style={styles.actionCardSub}>Route, attendance, settings</Text>
         </TouchableOpacity>
       </View>
 
@@ -488,6 +498,21 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 14,
     fontWeight: 'bold',
+  },
+  collectPaymentActionBtn: {
+    backgroundColor: '#ffffff',
+    borderColor: '#CBD2D7',
+    borderWidth: 1.5,
+    paddingVertical: 13,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 46,
+  },
+  collectPaymentActionBtnText: {
+    color: '#081224',
+    fontSize: 13,
+    fontWeight: '700',
   },
   actionsGrid: {
     flexDirection: 'row',

@@ -21,6 +21,8 @@ import {
   ChevronRight,
   LogOut,
   ChevronsUpDown,
+  Receipt,
+  KeyRound,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -50,6 +52,7 @@ export default function Sidebar() {
     Clients: false,
     Orders: false,
     Payments: false,
+    Expenses: false,
   });
 
   const toggleSubmenu = (title: string) => {
@@ -76,6 +79,7 @@ export default function Sidebar() {
           icon: Users,
           children: [
             { title: 'All Salespersons', href: '/salespersons' },
+            { title: 'Access Codes', href: '/salespersons/access-codes' },
             { title: 'Attendance', href: '/salespersons/attendance' },
             { title: 'Performance', href: '/salespersons/performance' },
             { title: 'Route History', href: '/salespersons/route' },
@@ -117,6 +121,15 @@ export default function Sidebar() {
           children: [
             { title: 'All Collections', href: '/payments' },
             { title: 'Pending Verification', href: '/payments?status=PENDING' },
+          ],
+        },
+        {
+          title: 'Expenses',
+          icon: Receipt,
+          children: [
+            { title: 'All Claims', href: '/expenses' },
+            { title: 'Pending Approval', href: '/expenses?status=SUBMITTED' },
+            { title: 'Reimbursements', href: '/expenses?status=APPROVED' },
           ],
         },
         {

@@ -18,9 +18,11 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useSocket } from '@/context/SocketContext';
 
 export default function LiveTrackingPage() {
   const { token } = useAuth();
+  const { socket, isConnected, lastEvent } = useSocket();
   const [trackers, setTrackers] = useState<any[]>([]);
   const [liveStatuses, setLiveStatuses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,9 +53,36 @@ export default function LiveTrackingPage() {
 
   useEffect(() => {
     fetchTrackingData();
-    const interval = setInterval(fetchTrackingData, 10000); // 10s live polling
+    const interval = setInterval(fetchTrackingData, 15000);
     return () => clearInterval(interval);
   }, [token]);
+
+  // Real-time socket event listener for immediate GPS point arrivals
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleLocationUpdate = (envelope: any) => {
+      const point = envelope.data || envelope;
+      setTrackers((prev) => {
+        const idx = prev.findIndex((t) => t.salespersonId === point.salespersonId);
+        if (idx >= 0) {
+          const updated = [...prev];
+          updated[idx] = { ...updated[idx], ...point, updatedAt: new Date().toISOString() };
+          return updated;
+        }
+        return [point, ...prev];
+      });
+      setLastRefreshed(new Date());
+    };
+
+    socket.on('location:update', handleLocationUpdate);
+    socket.on('attendance:changed', () => fetchTrackingData());
+
+    return () => {
+      socket.off('location:update', handleLocationUpdate);
+      socket.off('attendance:changed');
+    };
+  }, [socket]);
 
   const filteredStatuses = liveStatuses.filter((s) => {
     if (filterDuty === 'ON_DUTY') return s.dutyStatus === 'ON_DUTY';

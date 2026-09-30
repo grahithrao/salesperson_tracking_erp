@@ -14,10 +14,11 @@ import LoginScreen from './src/screens/LoginScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import ClientsScreen from './src/screens/ClientsScreen';
 import OrdersScreen from './src/screens/OrdersScreen';
+import ExpensesScreen from './src/screens/ExpensesScreen';
+import MoreScreen from './src/screens/MoreScreen';
 import CollectScreen from './src/screens/CollectScreen';
-import ProfileScreen from './src/screens/ProfileScreen';
 
-type TabType = 'Home' | 'Clients' | 'Orders' | 'Collect' | 'Profile';
+type TabType = 'Home' | 'Clients' | 'Orders' | 'Expenses' | 'More' | 'Collect';
 
 function MainApp() {
   const { user, isLoading, dutyStatus, pendingSyncCount } = useMobileAuth();
@@ -59,7 +60,6 @@ function MainApp() {
       {/* Top App Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <div style={{ display: 'none' }} />
           <View style={styles.brandIcon}>
             <View style={styles.brandInner}>
               <View style={styles.brandDot} />
@@ -115,20 +115,31 @@ function MainApp() {
         {activeTab === 'Orders' && (
           <OrdersScreen preselectedClient={preselectedClientForOrder} />
         )}
-        {activeTab === 'Collect' && (
-          <CollectScreen preselectedClient={preselectedClientForPayment} />
+        {activeTab === 'Expenses' && <ExpensesScreen />}
+        {activeTab === 'More' && (
+          <MoreScreen onOpenCollectDirect={() => setActiveTab('Collect')} />
         )}
-        {activeTab === 'Profile' && <ProfileScreen />}
+        {activeTab === 'Collect' && (
+          <View style={{ flex: 1 }}>
+            <View style={styles.directSubHeader}>
+              <TouchableOpacity onPress={() => setActiveTab('Home')} style={styles.backLink}>
+                <Text style={styles.backLinkText}>← Back to Home</Text>
+              </TouchableOpacity>
+              <Text style={styles.directSubTitle}>Collect Customer Payment</Text>
+            </View>
+            <CollectScreen preselectedClient={preselectedClientForPayment} />
+          </View>
+        )}
       </View>
 
-      {/* Bottom Navigation Bar (Matching Reference Sidebar Pill Style) */}
+      {/* Mobile Bottom Navigation Bar: Home | Clients | Orders | Expenses | More */}
       <View style={styles.bottomNav}>
         {[
           { id: 'Home', label: 'Home', icon: '🏠' },
           { id: 'Clients', label: 'Clients', icon: '👥' },
           { id: 'Orders', label: 'Orders', icon: '📦' },
-          { id: 'Collect', label: 'Collect', icon: '💳' },
-          { id: 'Profile', label: 'Profile', icon: '👤' },
+          { id: 'Expenses', label: 'Expenses', icon: '🧾' },
+          { id: 'More', label: 'More', icon: '☰' },
         ].map((t) => {
           const isActive = activeTab === t.id;
           return (
@@ -138,9 +149,11 @@ function MainApp() {
               onPress={() => setActiveTab(t.id as TabType)}
               accessibilityRole="tab"
               accessibilityLabel={t.label}
+              activeOpacity={0.7}
             >
               <Text style={[styles.tabIcon, isActive && styles.activeTabIcon]}>{t.icon}</Text>
               <Text style={[styles.tabLabel, isActive && styles.activeTabLabel]}>{t.label}</Text>
+              {isActive && <View style={styles.activeTabIndicator} />}
             </TouchableOpacity>
           );
         })}
@@ -216,6 +229,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     color: '#0B1320',
+    letterSpacing: -0.3,
   },
   headerSubtitle: {
     fontSize: 11,
@@ -267,22 +281,46 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F7F8',
   },
+  directSubHeader: {
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#CBD2D7',
+  },
+  backLink: {
+    paddingVertical: 2,
+  },
+  backLinkText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#081224',
+  },
+  directSubTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0B1320',
+    marginTop: 2,
+  },
   bottomNav: {
     flexDirection: 'row',
     backgroundColor: '#E8EDEF',
     borderTopWidth: 1,
     borderTopColor: '#D8DFE4',
-    paddingVertical: 5,
-    paddingHorizontal: 8,
-    paddingBottom: Platform.OS === 'ios' ? 20 : 6,
+    paddingVertical: 4,
+    paddingHorizontal: 6,
+    paddingBottom: Platform.OS === 'ios' ? 22 : 6,
     gap: 4,
+    minHeight: 56,
   },
   tabButton: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 5,
+    paddingVertical: 6,
     borderRadius: 10,
+    minHeight: 46,
+    position: 'relative',
   },
   activeTabButton: {
     backgroundColor: '#ffffff',
@@ -305,5 +343,13 @@ const styles = StyleSheet.create({
   activeTabLabel: {
     color: '#0B1320',
     fontWeight: '700',
+  },
+  activeTabIndicator: {
+    position: 'absolute',
+    bottom: 2,
+    width: 14,
+    height: 2.5,
+    backgroundColor: '#B4E39C',
+    borderRadius: 2,
   },
 });

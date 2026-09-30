@@ -167,11 +167,122 @@ export interface DailySummaryDTO {
 
 export interface SyncQueueItem {
   id: string;
-  type: 'ORDER' | 'VISIT_START' | 'VISIT_END' | 'PAYMENT' | 'GPS_BATCH' | 'START_DAY' | 'END_DAY';
+  type: 'ORDER' | 'VISIT_START' | 'VISIT_END' | 'PAYMENT' | 'GPS_BATCH' | 'START_DAY' | 'END_DAY' | 'EXPENSE';
   payload: any;
   status: SyncStatus;
   retryCount: number;
   lastError?: string;
   createdAt: string;
   idempotencyKey: string;
+}
+
+// ==================== EXPENSE TYPES ====================
+export interface ExpenseDTO {
+  id: string;
+  expenseNumber: string;
+  salespersonId: string;
+  salespersonName?: string;
+  salespersonCode?: string;
+  category: string;
+  amount: number;
+  currency: string;
+  expenseDate: string;
+  description: string;
+  businessPurpose?: string | null;
+  merchantName?: string | null;
+  paymentMethod: string;
+  receiptUrl?: string | null;
+  clientId?: string | null;
+  clientName?: string | null;
+  visitId?: string | null;
+  attendanceId?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  status: string;
+  rejectionReason?: string | null;
+  submittedAt?: string | null;
+  approvedAt?: string | null;
+  approvedByName?: string | null;
+  rejectedAt?: string | null;
+  rejectedByName?: string | null;
+  reimbursedAt?: string | null;
+  reimbursedByName?: string | null;
+  reimbursementRef?: string | null;
+  reimbursementMethod?: string | null;
+  offlineId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateExpenseDTO {
+  category: string;
+  amount: number;
+  expenseDate: string;
+  description: string;
+  businessPurpose?: string;
+  merchantName?: string;
+  paymentMethod?: string;
+  receiptUrl?: string;
+  clientId?: string | null;
+  visitId?: string | null;
+  attendanceId?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  status?: 'DRAFT' | 'SUBMITTED';
+  offlineId?: string;
+}
+
+export interface UpdateExpenseDTO {
+  category?: string;
+  amount?: number;
+  expenseDate?: string;
+  description?: string;
+  businessPurpose?: string;
+  merchantName?: string;
+  paymentMethod?: string;
+  receiptUrl?: string;
+}
+
+export interface ApproveExpenseDTO {
+  comment?: string;
+}
+
+export interface RejectExpenseDTO {
+  rejectionReason: string;
+}
+
+export interface ReimburseExpenseDTO {
+  reimbursementRef: string;
+  reimbursementMethod: string;
+  comment?: string;
+}
+
+// ==================== ACCESS CODE TYPES ====================
+export interface AccessCodeLoginDTO {
+  identifier: string; // Employee ID or Phone Number
+  accessCode: string;
+  deviceId?: string;
+}
+
+export interface UserAccessCodeDTO {
+  id: string;
+  userId: string;
+  userName: string;
+  employeeCode?: string;
+  displayHint?: string | null;
+  status: string;
+  expiresAt?: string | null;
+  failedAttempts: number;
+  lockedUntil?: string | null;
+  lastUsedAt?: string | null;
+  createdAt: string;
+}
+
+// ==================== REAL-TIME SOCKET TYPES ====================
+export interface SocketEventPayload<T = any> {
+  eventId: string;
+  version: number;
+  timestamp: string;
+  type: string;
+  data: T;
 }

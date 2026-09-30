@@ -8,6 +8,7 @@ export const loginSchema = z.object({
 });
 
 export const locationPointSchema = z.object({
+  clientPointId: z.string().optional(),
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
   accuracy: z.number().nullable().optional(),
@@ -113,4 +114,75 @@ export const createPaymentSchema = z.object({
 export const verifyPaymentSchema = z.object({
   status: z.enum(['VERIFIED', 'REJECTED']),
   notes: z.string().optional(),
+});
+
+// ==================== ACCESS CODE SCHEMAS ====================
+export const accessCodeLoginSchema = z.object({
+  identifier: z.string().min(2, 'Employee ID or Mobile number is required'),
+  accessCode: z.string().min(4, 'Access code must be at least 4 characters').max(32),
+  deviceId: z.string().optional(),
+});
+
+export const generateAccessCodeSchema = z.object({
+  userId: z.string().uuid('Valid user ID is required'),
+  expiresInDays: z.number().int().positive().optional().nullable(),
+});
+
+export const revokeAccessCodeSchema = z.object({
+  codeId: z.string().uuid().optional(),
+  userId: z.string().uuid().optional(),
+});
+
+// ==================== EXPENSE SCHEMAS ====================
+export const EXPENSE_CATEGORIES_LIST = [
+  'AUTO_RICKSHAW',
+  'BUS_TRAIN_METRO_TAXI',
+  'FUEL',
+  'FOOD_MEALS',
+  'ACCOMMODATION',
+  'PARKING_TOLLS',
+  'OTHER',
+] as const;
+
+export const createExpenseSchema = z.object({
+  category: z.enum(EXPENSE_CATEGORIES_LIST),
+  amount: z.number().positive('Amount must be positive and greater than zero'),
+  expenseDate: z.string().datetime({ offset: true }).or(z.string().regex(/^\d{4}-\d{2}-\d{2}/)),
+  description: z.string().min(3, 'Description must be at least 3 characters'),
+  businessPurpose: z.string().optional(),
+  merchantName: z.string().optional(),
+  paymentMethod: z.string().default('CASH'),
+  receiptUrl: z.string().optional(),
+  clientId: z.string().uuid().optional().nullable(),
+  visitId: z.string().uuid().optional().nullable(),
+  attendanceId: z.string().uuid().optional().nullable(),
+  latitude: z.number().optional().nullable(),
+  longitude: z.number().optional().nullable(),
+  status: z.enum(['DRAFT', 'SUBMITTED']).default('DRAFT'),
+  offlineId: z.string().optional(),
+});
+
+export const updateExpenseSchema = z.object({
+  category: z.enum(EXPENSE_CATEGORIES_LIST).optional(),
+  amount: z.number().positive('Amount must be positive').optional(),
+  expenseDate: z.string().datetime({ offset: true }).or(z.string().regex(/^\d{4}-\d{2}-\d{2}/)).optional(),
+  description: z.string().min(3, 'Description must be at least 3 characters').optional(),
+  businessPurpose: z.string().optional(),
+  merchantName: z.string().optional(),
+  paymentMethod: z.string().optional(),
+  receiptUrl: z.string().optional(),
+});
+
+export const approveExpenseSchema = z.object({
+  comment: z.string().optional(),
+});
+
+export const rejectExpenseSchema = z.object({
+  rejectionReason: z.string().min(3, 'Rejection reason is required'),
+});
+
+export const reimburseExpenseSchema = z.object({
+  reimbursementRef: z.string().min(2, 'Payment reference/transaction number is required'),
+  reimbursementMethod: z.string().min(2, 'Payment method (e.g. Bank Transfer, Cash, UPI) is required'),
+  comment: z.string().optional(),
 });
