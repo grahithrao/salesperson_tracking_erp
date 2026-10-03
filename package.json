@@ -3,20 +3,24 @@
   "version": "1.0.0",
   "private": true,
   "workspaces": [
-    "packages/*",
-    "apps/*"
+    "api",
+    "admin",
+    "app",
+    "shared"
   ],
   "scripts": {
     "dev": "npm run dev --workspaces --if-present",
     "dev:api": "npm --workspace=@erp/api run dev",
     "dev:admin": "npm --workspace=@erp/admin run dev",
-    "dev:mobile": "npm --workspace=@erp/mobile run start",
+    "dev:app": "npm --workspace=@erp/app run start",
+    "dev:mobile": "npm --workspace=@erp/app run start",
     "build": "npm run build --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present",
+    "test": "npm --workspace=@erp/api run test",
     "lint": "npm run lint --workspaces --if-present",
-    "db:migrate": "npm --workspace=@erp/database run migrate",
-    "db:seed": "npm --workspace=@erp/database run seed",
-    "db:generate": "npm --workspace=@erp/database run generate"
+    "db:migrate": "npm --workspace=@erp/api run db:migrate",
+    "db:push": "npm --workspace=@erp/api run db:push",
+    "db:seed": "npm --workspace=@erp/api run db:seed",
+    "db:generate": "npm --workspace=@erp/api run db:generate"
   },
   "devDependencies": {
     "typescript": "^5.4.5"

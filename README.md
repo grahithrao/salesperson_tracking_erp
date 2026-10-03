@@ -8,13 +8,10 @@ A production-grade, enterprise Field Sales Management and GPS Tracking ERP adher
 
 ```
 salesperson_tracking_erp/
-├── apps/
-│   ├── admin/             # Next.js 14 Web Dashboard (Tailwind CSS, Recharts, Leaflet Live Maps)
-│   ├── api/               # Node.js + Express REST API (TypeScript, JWT, Rate Limiting, PDFKit)
-│   └── mobile/            # React Native with Expo (TypeScript, Offline Sync Outbox, Native GPS)
-├── packages/
-│   ├── database/          # PostgreSQL schema with Prisma ORM, 17 relational models, seeds
-│   └── shared/            # Shared DTOs, Zod schemas, geo formulas, exact order calculator
+├── api/                   # Node.js + Express REST API & Database (Prisma ORM, PostgreSQL, Socket.io)
+├── admin/                 # Next.js 14 Web Dashboard (Tailwind CSS, Recharts, Leaflet Live Maps)
+├── app/                   # React Native with Expo (User-Facing Salesperson App, Native GPS, Offline Sync)
+├── shared/                # Shared DTOs, Zod schemas, geo formulas, exact order calculator
 ├── docs/                  # Detailed documentation mapping all 41 spec sections
 │   ├── requirements_checklist.md          # 41-section verification traceability table
 │   ├── architecture.md                    # Data flow, ledger mechanics, sync engine design
@@ -41,10 +38,10 @@ npm install
 Ensure PostgreSQL is running locally and `DATABASE_URL` is set:
 ```bash
 # Push schema and generate Prisma client
-npm --workspace=@erp/database run db:push
+npm run db:push
 
 # Populate database with complete seed data
-npm --workspace=@erp/database run seed
+npm run db:seed
 ```
 
 ### 4. Run Applications Locally
@@ -58,7 +55,7 @@ npm run dev:api
 npm run dev:admin
 
 # 3. Start Expo Salesperson Mobile App
-npm run dev:mobile
+npm run dev:app   # or npm run dev:mobile
 ```
 
 - **Admin Web Dashboard**: [http://localhost:3001](http://localhost:3001)

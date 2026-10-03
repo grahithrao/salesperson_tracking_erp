@@ -5,13 +5,10 @@ FieldTrack ERP is engineered as an enterprise-grade monorepo utilizing npm works
 
 ```
 salesperson_tracking_erp/
-├── apps/
-│   ├── admin/             # Next.js 14 Web Dashboard (Tailwind CSS, Recharts, Leaflet)
-│   ├── api/               # Node.js + Express REST API with TypeScript
-│   └── mobile/            # React Native with Expo (TypeScript, Offline Sync, Native GPS)
-├── packages/
-│   ├── database/          # PostgreSQL schema, Prisma ORM, migrations, and seed script
-│   └── shared/            # Shared DTOs, Zod validation schemas, business logic, geo helpers
+├── api/                   # Node.js + Express REST API & Database (Prisma ORM, PostgreSQL)
+├── admin/                 # Next.js 14 Web Dashboard (Tailwind CSS, Recharts, Leaflet)
+├── app/                   # React Native with Expo (User-Facing Salesperson App, Offline Sync, Native GPS)
+├── shared/                # Shared DTOs, Zod validation schemas, business logic, geo helpers
 ├── docs/                  # System specifications, API docs, operations guides, checklists
 └── package.json           # Root workspace configuration
 ```
@@ -53,7 +50,7 @@ salesperson_tracking_erp/
 
 ## 3. Database Architecture & Entity Relationships
 
-The database schema is defined in `packages/database/prisma/schema.prisma` and consists of 17 core entities:
+The database schema is defined in `api/prisma/schema.prisma` and consists of 17 core entities:
 
 1. **User**: Authentication credentials (`passwordHash` with bcrypt), contact information, and role (`SUPER_ADMIN`, `MANAGER`, `SALESPERSON`).
 2. **Salesperson**: Extends User with `employeeCode`, `joiningDate`, `territory`, `managerId`, `dutyStatus`, and hardware `deviceId`.

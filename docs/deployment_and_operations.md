@@ -4,7 +4,7 @@
 
 Create `.env` in the root workspace and in each respective application folder:
 
-### 1.1 Backend API (`apps/api/.env`)
+### 1.1 Backend API (`api/.env`)
 ```env
 # Server
 PORT=4000
@@ -29,13 +29,13 @@ MAP_PROVIDER=openstreetmap # or google, mapbox
 GOOGLE_MAPS_API_KEY=
 ```
 
-### 1.2 Web Admin Dashboard (`apps/admin/.env.local`)
+### 1.2 Web Admin Dashboard (`admin/.env.local`)
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:4000
 PORT=3001
 ```
 
-### 1.3 Salesperson Mobile Application (`apps/mobile/src/config.ts`)
+### 1.3 Salesperson Mobile Application (`app/src/config.ts`)
 ```typescript
 export const API_BASE_URL = 'http://YOUR_SERVER_IP:4000';
 ```
@@ -48,15 +48,15 @@ export const API_BASE_URL = 'http://YOUR_SERVER_IP:4000';
 To apply pending database migrations to a production database:
 ```bash
 # Push schema or deploy migrations
-npm --workspace=@erp/database run migrate
+npm run db:migrate
 # Or direct push
-npx prisma db push --schema=packages/database/prisma/schema.prisma
+npx prisma db push --schema=api/prisma/schema.prisma
 ```
 
 ### 2.2 Seeding Initial Data
 The seed script populates default administrator accounts, product categories, products, clients with realistic geographic coordinates, and active work sessions:
 ```bash
-npm --workspace=@erp/database run seed
+npm run db:seed
 ```
 
 ### 2.3 Initial Administrator Credentials
@@ -110,7 +110,7 @@ module.exports = {
   apps: [
     {
       name: 'erp-api',
-      cwd: './apps/api',
+      cwd: './api',
       script: 'dist/index.js',
       instances: 'max',
       exec_mode: 'cluster',
@@ -121,7 +121,7 @@ module.exports = {
     },
     {
       name: 'erp-admin',
-      cwd: './apps/admin',
+      cwd: './admin',
       script: 'node_modules/next/dist/bin/next',
       args: 'start -p 3001',
       instances: 2,
@@ -156,7 +156,7 @@ eas login
 
 ### 5.2 Android Production Build (APK / AAB)
 ```bash
-cd apps/mobile
+cd app
 eas build --platform android --profile production
 ```
 Key Android background location permissions configured:
@@ -168,7 +168,7 @@ Key Android background location permissions configured:
 
 ### 5.3 iOS Production Build (IPA)
 ```bash
-cd apps/mobile
+cd app
 eas build --platform ios --profile production
 ```
 Key iOS `Info.plist` privacy keys configured:
