@@ -1,6 +1,7 @@
 # =====================================================================
-# API (Backend) Production Multi-Stage Dockerfile
-# Build context: repository root (docker build -f api/Dockerfile -t erp-api .)
+# API (Backend) Standalone Multi-Stage Dockerfile
+# Build context: api/ folder (e.g. `cd api && docker build -t erp-api .`)
+# Or from root: `docker build -f api/Dockerfile api -t erp-api`
 # =====================================================================
 
 FROM node:20-alpine AS builder
@@ -10,23 +11,17 @@ WORKDIR /app
 # Install openssl for Prisma engines on Alpine
 RUN apk add --no-cache openssl
 
-# Copy workspace package manifests
-COPY package.json package-lock.json ./
-COPY shared/package.json ./shared/
-COPY api/package.json ./api/
+# Copy package manifests & prisma schema
+COPY package*.json ./
+COPY prisma ./prisma/
 
-# Install all workspace dependencies
+# Install all dependencies for build
 RUN npm ci
 
-# Copy shared types and API source
-COPY shared ./shared
-COPY api ./api
+# Copy API source code
+COPY . .
 
-# Build shared package
-RUN npm run build --workspace=@erp/shared
-
-# Generate Prisma Client and compile API TypeScript to dist/
-WORKDIR /app/api
+# Generate Prisma Client and compile TypeScript to dist/
 RUN npx prisma generate
 RUN npm run build
 
@@ -42,26 +37,20 @@ ENV PORT=4000
 
 RUN apk add --no-cache openssl
 
-# Copy root & workspace manifests
-COPY package.json package-lock.json ./
-COPY shared/package.json ./shared/
-COPY api/package.json ./api/
+# Copy package manifests & install production dependencies only
+COPY package*.json ./
+COPY prisma ./prisma/
 
-# Install production dependencies only
 RUN npm ci --omit=dev
 
-# Copy compiled artifacts & generated prisma client
+# Copy generated prisma engine & client from builder
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/api/node_modules/.prisma ./api/node_modules/.prisma
-COPY --from=builder /app/api/prisma ./api/prisma
-COPY --from=builder /app/shared ./shared
-COPY --from=builder /app/api/dist ./api/dist
+COPY --from=builder /app/dist ./dist
 
 # Create uploads directory and set unprivileged permissions
-RUN mkdir -p /app/api/uploads && chown -R node:node /app
+RUN mkdir -p /app/uploads && chown -R node:node /app
 
 USER node
 EXPOSE 4000
 
-WORKDIR /app/api
 CMD ["node", "dist/index.js"]

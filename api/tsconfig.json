@@ -12,7 +12,9 @@
     "baseUrl": ".",
     "paths": {
       "@erp/database": ["./src/db/index.ts"],
-      "@erp/database/*": ["./src/db/*"]
+      "@erp/database/*": ["./src/db/*"],
+      "@erp/shared": ["./src/shared/index.ts"],
+      "@erp/shared/*": ["./src/shared/*"]
     }
   },
   "include": ["src/**/*"]
