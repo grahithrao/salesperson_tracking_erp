@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SyncQueueItem, SyncStatus } from '@erp/shared';
+import { SyncQueueItem, SyncStatus } from '../shared';
 
 const STORAGE_KEYS = {
   OUTBOX_QUEUE: '@erp_outbox_queue',

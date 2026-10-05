@@ -22,7 +22,7 @@ import {
   ShieldAlert,
   ChevronRight,
 } from 'lucide-react';
-import { EXPENSE_CATEGORIES, EXPENSE_STATUSES } from '@erp/shared';
+import { EXPENSE_CATEGORIES, EXPENSE_STATUSES } from '@/shared';
 
 export default function ExpensesPage() {
   const { token, user } = useAuth();

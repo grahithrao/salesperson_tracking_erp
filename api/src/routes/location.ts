@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { prisma, Role, SalespersonStatus } from '../db';
-import { locationUpdateSchema, isValidCoordinate, calculatePathDistanceKm, calculateHaversineDistanceMeters } from '@erp/shared';
+import { locationUpdateSchema, isValidCoordinate, calculatePathDistanceKm, calculateHaversineDistanceMeters } from '../shared';
 import { authenticateToken, getAuthorizedSalespersonIds } from '../middleware/auth';
 import { notifySalespersonLocation } from '../socket';
 

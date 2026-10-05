@@ -25,7 +25,7 @@ import {
   Package,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { calculateOrderTotals } from '@erp/shared';
+import { calculateOrderTotals } from '@/shared';
 
 const ORDER_STEPS = [
   { id: 'client', label: 'Client' },

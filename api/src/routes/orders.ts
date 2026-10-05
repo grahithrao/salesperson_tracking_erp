@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { prisma, Role, OrderStatus, LedgerEntryType } from '../db';
-import { createOrderSchema, updateOrderStatusSchema, calculateOrderTotals } from '@erp/shared';
+import { createOrderSchema, updateOrderStatusSchema, calculateOrderTotals } from '../shared';
 import { authenticateToken, getAuthorizedSalespersonIds, requireRole } from '../middleware/auth';
 import { logAuditEvent } from '../middleware/audit';
 import { notifyOrderCreated, notifyOrderStatusChanged } from '../socket';

@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { prisma, Role, VisitOutcome } from '../db';
-import { startVisitSchema, endVisitSchema, calculateHaversineDistanceMeters } from '@erp/shared';
+import { startVisitSchema, endVisitSchema, calculateHaversineDistanceMeters } from '../shared';
 import { authenticateToken, getAuthorizedSalespersonIds } from '../middleware/auth';
 import { logAuditEvent } from '../middleware/audit';
 

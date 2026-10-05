@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { prisma, Role, UserStatus } from '../db';
-import { generateAccessCodeSchema, revokeAccessCodeSchema } from '@erp/shared';
+import { generateAccessCodeSchema, revokeAccessCodeSchema } from '../shared';
 import { authenticateToken, requireRole } from '../middleware/auth';
 import { logAuditEvent } from '../middleware/audit';
 

@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from './AuthContext';
-import { SOCKET_EVENTS } from '@erp/shared';
+import { SOCKET_EVENTS } from '@/shared';
 import { SOCKET_URL } from '../config/api';
 
 interface SocketContextValue {

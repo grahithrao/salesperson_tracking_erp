@@ -16,7 +16,7 @@ import { useMobileAuth } from '../context/MobileAuthContext';
 import { apiRequest } from '../services/api';
 import { getCurrentCoordinates } from '../services/locationService';
 import { enqueueOperation } from '../storage/db';
-import { EXPENSE_CATEGORIES, ExpenseCategory } from '@erp/shared';
+import { EXPENSE_CATEGORIES, ExpenseCategory } from '../shared';
 
 export default function ExpensesScreen() {
   const { user } = useMobileAuth();

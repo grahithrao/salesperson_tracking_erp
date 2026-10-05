@@ -6,7 +6,7 @@ import {
   approveExpenseSchema,
   rejectExpenseSchema,
   reimburseExpenseSchema,
-} from '@erp/shared';
+} from '../shared';
 import { authenticateToken, requireRole } from '../middleware/auth';
 import { logAuditEvent } from '../middleware/audit';
 import {

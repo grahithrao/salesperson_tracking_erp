@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { prisma, UserStatus, Role } from '../db';
 import { config } from '../config';
-import { SOCKET_EVENTS } from '@erp/shared';
+import { SOCKET_EVENTS } from '../shared';
 
 let io: SocketIOServer | null = null;
 

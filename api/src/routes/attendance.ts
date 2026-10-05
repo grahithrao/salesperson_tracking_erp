@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { prisma, Role, AttendanceStatus, SalespersonStatus } from '../db';
-import { startAttendanceSchema, endAttendanceSchema, calculatePathDistanceKm } from '@erp/shared';
+import { startAttendanceSchema, endAttendanceSchema, calculatePathDistanceKm } from '../shared';
 import { authenticateToken, getAuthorizedSalespersonIds } from '../middleware/auth';
 import { logAuditEvent } from '../middleware/audit';
 import { notifyAttendanceChange } from '../socket';

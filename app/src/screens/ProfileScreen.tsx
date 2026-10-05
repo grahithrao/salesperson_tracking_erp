@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useMobileAuth } from '../context/MobileAuthContext';
 import { getOutboxQueue } from '../storage/db';
-import { SyncQueueItem } from '@erp/shared';
+import { SyncQueueItem } from '../shared';
 
 export default function ProfileScreen() {
   const { user, dutyStatus, logout, triggerSync, pendingSyncCount } = useMobileAuth();

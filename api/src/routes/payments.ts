@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { prisma, Role, PaymentStatus, LedgerEntryType } from '../db';
-import { createPaymentSchema, verifyPaymentSchema } from '@erp/shared';
+import { createPaymentSchema, verifyPaymentSchema } from '../shared';
 import { authenticateToken, getAuthorizedSalespersonIds, requireRole } from '../middleware/auth';
 import { logAuditEvent } from '../middleware/audit';
 import { generatePaymentReceiptPDF } from '../utils/pdfReceipt';

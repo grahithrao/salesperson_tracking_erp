@@ -14,7 +14,7 @@ import {
 import { apiRequest } from '../services/api';
 import { getCurrentCoordinates } from '../services/locationService';
 import { enqueueOperation, getCachedProducts, cacheProducts } from '../storage/db';
-import { calculateOrderTotals } from '@erp/shared';
+import { calculateOrderTotals } from '../shared';
 
 interface OrdersScreenProps {
   preselectedClient?: any;

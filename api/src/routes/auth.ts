@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma, UserStatus } from '../db';
-import { loginSchema, accessCodeLoginSchema } from '@erp/shared';
+import { loginSchema, accessCodeLoginSchema } from '../shared';
 import { config } from '../config';
 import { authLimiter } from '../middleware/rateLimiter';
 import { authenticateToken } from '../middleware/auth';
