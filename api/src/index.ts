@@ -2,10 +2,13 @@ import http from 'http';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import { config } from './config';
+import { config, validateConfig } from './config';
 import { apiLimiter } from './middleware/rateLimiter';
 import { errorHandler } from './middleware/errorHandler';
 import { initSocketServer } from './socket';
+
+// Validate environment configuration immediately
+validateConfig();
 
 // Route imports
 import authRoutes from './routes/auth';
@@ -34,9 +37,34 @@ const httpServer = http.createServer(app);
 // Initialize Socket.IO Server
 const io = initSocketServer(httpServer);
 
+// Configure explicit CORS origins
+const allowedOrigins = new Set(config.corsOrigins);
+export const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    // Non-browser or same-origin requests (e.g., mobile apps, server-side fetch, health-checks)
+    if (!origin) {
+      return callback(null, true);
+    }
+    if (allowedOrigins.has(origin)) {
+      return callback(null, true);
+    }
+    // Allow local development ports if not in strict production
+    if (config.nodeEnv !== 'production' && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+      return callback(null, true);
+    }
+    const corsErr: any = new Error(`Origin ${origin} is not permitted by CORS policy`);
+    corsErr.status = 403;
+    return callback(corsErr);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  exposedHeaders: ['Content-Disposition'],
+};
+
 // Security and utility middlewares
 app.use(helmet({ contentSecurityPolicy: false })); // allow swagger CDN
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/api', apiLimiter);

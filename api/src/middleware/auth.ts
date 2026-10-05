@@ -27,7 +27,12 @@ declare global {
 
 export async function authenticateToken(req: Request, res: Response, next: NextFunction): Promise<void> {
   const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
+  let token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
+
+  // Fallback to query parameter token for browser download/receipt tabs
+  if (!token && typeof req.query.token === 'string') {
+    token = req.query.token;
+  }
 
   if (!token) {
     res.status(401).json({ error: 'Authentication token required' });

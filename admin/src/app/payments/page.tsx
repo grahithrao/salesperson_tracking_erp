@@ -23,6 +23,7 @@ import {
   Building2,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { getApiUrl } from '@/config/api';
 
 const PAYMENT_STEPS = [
   { id: 'client', label: 'Client' },
@@ -120,7 +121,7 @@ function PaymentsContent() {
 
   const handleDownloadPdf = (id: string) => {
     if (!token) return;
-    window.open(`/api/payments/${id}/receipt-pdf?token=${token}`, '_blank');
+    window.open(getApiUrl(`/api/payments/${id}/receipt-pdf?token=${token}`), '_blank');
   };
 
   const handleSubmitPayment = async () => {

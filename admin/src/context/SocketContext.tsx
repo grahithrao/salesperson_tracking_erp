@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useRef } from 'r
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 import { SOCKET_EVENTS } from '@erp/shared';
+import { SOCKET_URL } from '../config/api';
 
 interface SocketContextValue {
   socket: Socket | null;
@@ -39,7 +40,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000';
+    const socketUrl = SOCKET_URL;
     setConnectionStatus('connecting');
 
     const s = io(socketUrl, {

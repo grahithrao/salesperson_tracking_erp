@@ -30,9 +30,18 @@ export function createEnvelope<T>(type: string, data: T, version: number = 1): R
 }
 
 export function initSocketServer(httpServer: HttpServer): SocketIOServer {
+  const allowedOrigins = new Set(config.corsOrigins);
+
   io = new SocketIOServer(httpServer, {
     cors: {
-      origin: true,
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.has(origin)) return callback(null, true);
+        if (config.nodeEnv !== 'production' && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+          return callback(null, true);
+        }
+        return callback(new Error(`Origin ${origin} not allowed by CORS`));
+      },
       credentials: true,
     },
     pingInterval: 25000,

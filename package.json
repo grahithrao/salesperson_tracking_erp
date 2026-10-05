@@ -15,6 +15,7 @@
     "dev:app": "npm --workspace=@erp/app run start",
     "dev:mobile": "npm --workspace=@erp/app run start",
     "build": "npm run build --workspaces --if-present",
+    "build:shared": "npm --workspace=@erp/shared run build",
     "test": "npm --workspace=@erp/api run test",
     "lint": "npm run lint --workspaces --if-present",
     "db:migrate": "npm --workspace=@erp/api run db:migrate",
