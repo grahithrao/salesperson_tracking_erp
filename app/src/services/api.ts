@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { config } from '../config';
+import { config, sanitizeUrl } from '../config';
 import {
   getOutboxQueue,
   updateQueueItem,
@@ -15,6 +15,47 @@ export async function getAuthToken(): Promise<string | null> {
   return await AsyncStorage.getItem('@erp_auth_token');
 }
 
+export async function pingApiServer(customUrl?: string): Promise<{ ok: boolean; message: string; version?: string; latencyMs?: number }> {
+  const target = sanitizeUrl(customUrl) || config.apiBaseUrl;
+  const start = Date.now();
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+    const res = await fetch(`${target}/api/health`, {
+      method: 'GET',
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    const latencyMs = Date.now() - start;
+    const text = await res.text();
+    let json: any = {};
+    try {
+      json = JSON.parse(text);
+    } catch {
+      json = { message: text };
+    }
+    if (res.ok) {
+      return {
+        ok: true,
+        message: `Connected (${latencyMs}ms)`,
+        version: json.version || 'v1.0.0',
+        latencyMs,
+      };
+    } else {
+      return {
+        ok: false,
+        message: `Server returned HTTP ${res.status}: ${json.error || json.message || res.statusText}`,
+      };
+    }
+  } catch (err: any) {
+    const isTimeout = err.name === 'AbortError';
+    return {
+      ok: false,
+      message: isTimeout ? 'Connection timed out (6s)' : (err.message || 'Unable to connect to server'),
+    };
+  }
+}
+
 export async function apiRequest(endpoint: string, options: RequestInit = {}): Promise<any> {
   const token = await getAuthToken();
   const headers: Record<string, string> = {
@@ -26,16 +67,37 @@ export async function apiRequest(endpoint: string, options: RequestInit = {}): P
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const url = `${config.apiBaseUrl}${endpoint}`;
+  const baseUrl = config.apiBaseUrl;
+  const url = `${baseUrl}${endpoint}`;
+
   try {
-    const res = await fetch(url, { ...options, headers });
-    const json = await res.json();
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000); // 20s timeout
+    const res = await fetch(url, {
+      ...options,
+      headers,
+      signal: options.signal || controller.signal,
+    });
+    clearTimeout(timeout);
+
+    const text = await res.text();
+    let json: any;
+    try {
+      json = text ? JSON.parse(text) : {};
+    } catch {
+      json = { error: text || `HTTP ${res.status} ${res.statusText}` };
+    }
+
     if (!res.ok) {
-      throw new Error(json.error || `HTTP error ${res.status}`);
+      const errMsg = json.error || json.message || `HTTP error ${res.status} (${res.statusText})`;
+      throw new Error(errMsg);
     }
     return json;
   } catch (err: any) {
-    // If network error, propagate so caller knows we're offline
+    if (err.name === 'AbortError') {
+      throw new Error(`Request to ${endpoint} timed out. Please check server connectivity.`);
+    }
+    // Propagate network/auth error
     throw err;
   }
 }

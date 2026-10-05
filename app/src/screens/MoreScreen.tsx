@@ -10,12 +10,13 @@ import {
   Platform,
 } from 'react-native';
 import { useMobileAuth } from '../context/MobileAuthContext';
-import { apiRequest } from '../services/api';
+import { apiRequest, pingApiServer } from '../services/api';
 import { getTrackingState, subscribeTrackingState, LocationTrackingState } from '../services/locationService';
 import { getOutboxQueue } from '../storage/db';
+import { config, setCustomApiBaseUrl } from '../config';
 import CollectScreen from './CollectScreen';
 
-type MoreSubScreen = 'MENU' | 'COLLECTIONS' | 'ROUTE' | 'ATTENDANCE' | 'NOTIFICATIONS' | 'PROFILE';
+type MoreSubScreen = 'MENU' | 'COLLECTIONS' | 'ROUTE' | 'ATTENDANCE' | 'NOTIFICATIONS' | 'PROFILE' | 'SERVER';
 
 export default function MoreScreen({
   initialSubScreen = 'MENU',
@@ -318,6 +319,89 @@ export default function MoreScreen({
     );
   }
 
+  // NESTED: Server Settings & Diagnostics
+  if (subScreen === 'SERVER') {
+    return (
+      <View style={styles.container}>
+        <View style={styles.subHeader}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => setSubScreen('MENU')}>
+            <Text style={styles.backBtnText}>← Back to More</Text>
+          </TouchableOpacity>
+          <Text style={styles.subHeaderTitle}>Server Connection & Diagnostics</Text>
+        </View>
+        <ScrollView contentContainerStyle={styles.scroll}>
+          {/* Active Config Card */}
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Active Backend Endpoint</Text>
+            <View style={styles.urlBox}>
+              <Text style={styles.urlText}>{config.apiBaseUrl}</Text>
+            </View>
+            <Text style={styles.logDetail}>
+              All mobile API requests, GPS sync batches, and media uploads route through this endpoint.
+            </Text>
+
+            <TouchableOpacity
+              style={[styles.syncBtn, { marginTop: 14 }]}
+              onPress={async () => {
+                setSyncing(true);
+                try {
+                  const ping = await pingApiServer();
+                  Alert.alert(
+                    ping.ok ? '🟢 Server Online' : '🔴 Server Unreachable',
+                    `${ping.message}\nVersion: ${ping.version || 'unknown'}`
+                  );
+                } catch (err: any) {
+                  Alert.alert('Connection Failed', err.message);
+                } finally {
+                  setSyncing(false);
+                }
+              }}
+              disabled={syncing}
+            >
+              {syncing ? (
+                <ActivityIndicator color="#ffffff" size="small" />
+              ) : (
+                <Text style={styles.syncBtnText}>Ping Health Check (/api/health)</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* Quick Presets */}
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Switch Environment Preset</Text>
+            <Text style={[styles.logDetail, { marginBottom: 12 }]}>
+              Change local development target or connect directly to staging/production server.
+            </Text>
+
+            <View style={{ gap: 8 }}>
+              <TouchableOpacity
+                style={styles.presetOption}
+                onPress={async () => {
+                  await setCustomApiBaseUrl('http://localhost:4000');
+                  Alert.alert('Server Updated', 'Target set to http://localhost:4000');
+                }}
+              >
+                <Text style={styles.presetOptionTitle}>💻 Local Machine (localhost:4000)</Text>
+                <Text style={styles.presetOptionSub}>For Web Browser & iOS Simulator</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.presetOption}
+                onPress={async () => {
+                  await setCustomApiBaseUrl('http://10.0.2.2:4000');
+                  Alert.alert('Server Updated', 'Target set to http://10.0.2.2:4000');
+                }}
+              >
+                <Text style={styles.presetOptionTitle}>🤖 Android Emulator (10.0.2.2:4000)</Text>
+                <Text style={styles.presetOptionSub}>Special loopback for Android Studio</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
+      </View>
+    );
+  }
+
   // MAIN MORE MENU
   return (
     <View style={styles.container}>
@@ -393,6 +477,23 @@ export default function MoreScreen({
               <View>
                 <Text style={styles.menuItemTitle}>Notifications</Text>
                 <Text style={styles.menuItemSub}>Approvals, settlements, and alerts</Text>
+              </View>
+            </View>
+            <Text style={styles.chevron}>›</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => handleOpenSub('SERVER')}
+            activeOpacity={0.7}
+          >
+            <View style={styles.menuItemLeft}>
+              <View style={[styles.menuIconBox, { backgroundColor: '#F0FDF4' }]}>
+                <Text style={styles.menuIcon}>⚙️</Text>
+              </View>
+              <View>
+                <Text style={styles.menuItemTitle}>Server & Diagnostics</Text>
+                <Text style={styles.menuItemSub}>Ping health check & endpoints</Text>
               </View>
             </View>
             <Text style={styles.chevron}>›</Text>
@@ -753,5 +854,37 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#586570',
     marginTop: 4,
+  },
+  urlBox: {
+    backgroundColor: '#F5F7F8',
+    borderColor: '#CBD2D7',
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    marginTop: 6,
+    marginBottom: 8,
+  },
+  urlText: {
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0B1320',
+  },
+  presetOption: {
+    backgroundColor: '#F5F7F8',
+    borderColor: '#CBD2D7',
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 12,
+  },
+  presetOptionTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0B1320',
+  },
+  presetOptionSub: {
+    fontSize: 11,
+    color: '#586570',
+    marginTop: 2,
   },
 });
