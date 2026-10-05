@@ -15,8 +15,8 @@ RUN apk add --no-cache openssl
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install all dependencies for build
-RUN npm ci
+# Install dependencies (supports with or without local package-lock.json)
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
 # Copy API source code
 COPY . .
@@ -41,7 +41,7 @@ RUN apk add --no-cache openssl
 COPY package*.json ./
 COPY prisma ./prisma/
 
-RUN npm ci --omit=dev
+RUN if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi
 
 # Copy generated prisma engine & client from builder
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma

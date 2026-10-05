@@ -8,6 +8,10 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "@erp/shared": ["./src/shared/index.ts"],
+      "@erp/shared/*": ["./src/shared/*"]
+    }
   }
 }

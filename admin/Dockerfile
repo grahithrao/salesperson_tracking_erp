@@ -1,29 +1,20 @@
 # =====================================================================
-# Admin Dashboard Production Multi-Stage Dockerfile
-# Build context: repository root (docker build -f admin/Dockerfile -t erp-admin .)
+# Admin Dashboard Standalone Multi-Stage Dockerfile
+# Build context: admin/ folder (e.g. `cd admin && docker build -t erp-admin .`)
+# Or from root: `docker build -f admin/Dockerfile admin -t erp-admin`
 # =====================================================================
 
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package manifests
-COPY package.json package-lock.json ./
-COPY shared/package.json ./shared/
-COPY admin/package.json ./admin/
+COPY package*.json ./
 
-# Install workspace dependencies
-RUN npm ci
+# Install dependencies (supports with or without package-lock.json)
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
-# Copy shared library and admin source
-COPY shared ./shared
-COPY admin ./admin
+COPY . .
 
-# Build shared package
-RUN npm run build --workspace=@erp/shared
-
-# Build Next.js production bundle
-WORKDIR /app/admin
 ENV NODE_ENV=production
 RUN npm run build
 
@@ -37,23 +28,16 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Copy manifests
-COPY package.json package-lock.json ./
-COPY shared/package.json ./shared/
-COPY admin/package.json ./admin/
+COPY package*.json ./
 
-# Install production dependencies only
-RUN npm ci --omit=dev
+RUN if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi
 
-# Copy compiled shared package and Next.js build
-COPY --from=builder /app/shared ./shared
-COPY --from=builder /app/admin/.next ./admin/.next
-COPY --from=builder /app/admin/next.config.mjs ./admin/next.config.mjs
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/next.config.mjs ./next.config.mjs
 
-RUN mkdir -p /app/admin/public && chown -R node:node /app
+RUN mkdir -p /app/public && chown -R node:node /app
 
 USER node
 EXPOSE 3000
 
-WORKDIR /app/admin
 CMD ["npx", "next", "start", "-p", "3000"]

@@ -4,7 +4,6 @@ const backendUrl = rawBackendUrl.replace(/\/+$/, '');
 
 const nextConfig = {
   reactStrictMode: false, // Prevents double mounting with Leaflet maps
-  transpilePackages: ['@erp/shared'],
   async rewrites() {
     return [
       {
