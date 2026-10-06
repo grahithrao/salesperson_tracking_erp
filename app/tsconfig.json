@@ -2,7 +2,10 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
-    "lib": ["dom", "esnext"],
+    "lib": [
+      "dom",
+      "esnext"
+    ],
     "jsx": "react-native",
     "strict": true,
     "moduleResolution": "node",
@@ -10,8 +13,13 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "paths": {
-      "@erp/shared": ["./src/shared/index.ts"],
-      "@erp/shared/*": ["./src/shared/*"]
+      "@erp/shared": [
+        "./src/shared/index.ts"
+      ],
+      "@erp/shared/*": [
+        "./src/shared/*"
+      ]
     }
-  }
+  },
+  "extends": "expo/tsconfig.base"
 }
